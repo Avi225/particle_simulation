@@ -4,7 +4,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Avi225/particle_simulation">
-    <img src="https://github.com/Avi225/particle_simulation/assets/61160595/21ba6866-a575-4996-bc46-ad6df02e2efc" alt="Logo" width="120" height="120">
+    <img src="https://github.com/Avi225/particle_simulation/assets/61160595/9f35a634-993e-45a4-aabc-5e76d5e28e22" alt="Logo" width="120" height="120">
   </a>
 
 <h3 align="center">Particle Simulation</h3>
@@ -20,7 +20,7 @@
 
 
 
-https://github.com/Avi225/particle_simulation/assets/61160595/47c0ac73-83ad-4425-bbf7-908936b2469f
+https://github.com/Avi225/particle_simulation/assets/61160595/cc33de0f-358e-4c9c-95f0-5d9101b566b7
 
 
 
