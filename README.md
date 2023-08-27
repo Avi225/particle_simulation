@@ -23,7 +23,7 @@
 https://github.com/Avi225/particle_simulation/assets/61160595/cc33de0f-358e-4c9c-95f0-5d9101b566b7
 
 
-### Instructions
+## Instructions
 - Drag `LMB` to spawn a particle
 - Hold `F` to spam particles
 - Press `spacebar` to pause/resume simulation
@@ -31,7 +31,7 @@ https://github.com/Avi225/particle_simulation/assets/61160595/cc33de0f-358e-4c9c
 
 
 
-### Building
+## Building
 1. Clone the repo
 2. Requires SDL2, SDL2_image and SDL2_ttf
 3. Example build command with mingw64:
