@@ -140,6 +140,7 @@ void aWindow::switchFullscreen()
 	{
 		SDL_SetWindowFullscreen(window, 0);
 		fullscreen = false;
+
 	}
 	else
 	{

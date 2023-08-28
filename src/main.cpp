@@ -73,6 +73,10 @@ int main(int argc, char* args[])
 						{
 							case SDLK_F11:
 								mainWindow.switchFullscreen();
+								int w, h;
+								mainWindow.getSize(&w, &h);
+								mainWindow.updateSize(w, h);
+								mainCamera.setSize(w, h);
 								break;
 							case SDLK_SPACE:
 								container.switchRunning();
