@@ -1,7 +1,5 @@
 #include "simulation.hpp"
 
-
-
 particle::particle(vector2f nPosition, float nRadius)
 :position(nPosition), radius(nRadius)
 {

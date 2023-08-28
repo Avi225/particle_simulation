@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include <C:/Proffy/Launcher.h>
 
 #include "math.hpp"
 #include "aWindow.hpp"
@@ -18,8 +17,8 @@ int main(int argc, char* args[])
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();
 
-	aWindow mainWindow("particles", 1920, 1080);
-	aCamera mainCamera(1920, 1080, &mainWindow);
+	aWindow mainWindow("particles", 1920/2, 1080/2);
+	aCamera mainCamera(1920/2, 1080/2, &mainWindow);
 	simulationContainer container(&mainWindow);
 
 	grid mainGrid(vector2f(0, 0), 101, 101, 5, 5);
@@ -58,7 +57,7 @@ int main(int argc, char* args[])
 					{		
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container.placeParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), 2, 0);
+						container.placeParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), 1, 0);
 					}
 					break;
 				case SDL_MOUSEBUTTONUP:
@@ -66,7 +65,7 @@ int main(int argc, char* args[])
 					{
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container.placeParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), 2, 1);
+						container.placeParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), 1, 1);
 					}
 					break;
 				case SDL_KEYDOWN:
@@ -112,7 +111,7 @@ int main(int argc, char* args[])
 			{
 				int x, y;
 				SDL_GetMouseState(&x, &y);	
-				container.addParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), .9);
+				container.addParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), 1);
 			}
 		mainWindow.clear();
 
@@ -121,14 +120,8 @@ int main(int argc, char* args[])
 
 		mainGrid.render(&mainCamera);
 
-		{
-	         Proffy::Launcher profiler(
-	             L"C:/Proffy/bin64/Proffy64.exe", // Path to Proffy.exe
-	             L"H:/programmingo/cpp/particles/bin/x64", // Output directory for the result files
-	             1.0 / 20); // Delay between samples, so here set to 20 Hz
-
-			container.update();
-		}
+		container.update();
+		
 
 		container.render(&mainCamera);
 
