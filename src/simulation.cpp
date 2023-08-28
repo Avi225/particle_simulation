@@ -69,7 +69,7 @@ void particle::renderVector(aCamera *camera)
 
 bool particle::checkCollision(particle b)
 {
-	if(position.distance(b.position) < (radius + b.radius - 0.01))
+	if(position.distance(b.position) < (radius + b.radius))
 		return true;	
 	else
 		return false;
@@ -85,11 +85,12 @@ simulationContainer::simulationContainer(aWindow* window)
 :window(window)
 {
 	density = 1;
-	restitution = .5;
+	restitution = .95;
+	energyLoss = 0.2;
 
 	running = false;
 	isPlacingParticle = false;
-	iterationSteps = 24;
+	iterationSteps = 12;
 
 	//staticPoints.push_back(staticPoint(vector2f(-2, 01
 	//staticPoints.push_back(staticPoint(vector2f(2, 0)));
@@ -118,6 +119,7 @@ void simulationContainer::update()
 {
 	if(running)
 	{
+
 		std::vector<std::pair<int, int>> pairs;
 
 		for(int i = 0; i < int(particles.size()); ++i)
@@ -127,16 +129,16 @@ void simulationContainer::update()
 
 		for(int i = 0; i < int(particles.size()); i++)
 		{
-			if(particles[i].position.y > 50)
-				particles.erase(particles.begin()+i);
+			// if(particles[i].position.y > 50)
+			// 	particles.erase(particles.begin()+i);
 			particles[i].velocity.x += particles[i].acceleration.x;
 			particles[i].velocity.y += particles[i].acceleration.y;
 
 			particles[i].position.x += particles[i].velocity.x;
 			particles[i].position.y += particles[i].velocity.y;
 
-			particles[i].velocity.x += (particles[i].velocity.x > 0) ? -0.001 : 0.001;
-			particles[i].velocity.y += (particles[i].velocity.y > 0) ? -0.001 : 0.001;
+			//particles[i].velocity.x += (particles[i].velocity.x > 0) ? -0.001 : 0.001;
+			//particles[i].velocity.y += (particles[i].velocity.y > 0) ? -0.001 : 0.001;
 		}
 
 		vector2f tangent;
@@ -153,28 +155,28 @@ void simulationContainer::update()
 					float difference = particles[pairs[i].first].radius + particles[pairs[i].second].radius - particles[pairs[i].first].position.distance(particles[pairs[i].second].position);
 					vector2f overlap = particles[pairs[i].first].position.getVector(particles[pairs[i].second].position);
 					overlap.normalize(difference);
+					
+					particles[pairs[i].first].position.x += overlap.x / 2;
+					particles[pairs[i].first].position.y += overlap.y / 2;
 
-
-					particles[pairs[i].first].position.x += overlap.x/2;
-					particles[pairs[i].first].position.y += overlap.y/2;
-
-					particles[pairs[i].second].position.x -= overlap.x/2;
-					particles[pairs[i].second].position.y -= overlap.y/2;
+					particles[pairs[i].second].position.x -= overlap.x / 2;
+					particles[pairs[i].second].position.y -= overlap.y / 2;
 
 					vector2f collisionNormal = particles[pairs[i].first].position.getVector(particles[pairs[i].second].position);
-					collisionNormal.normalize(1);
+					float distance = aSquareRoot(collisionNormal.x * collisionNormal.x + collisionNormal.y * collisionNormal.y);
+					collisionNormal.x /= distance;
+					collisionNormal.y /= distance;
 
 					vector2f velocity = {particles[pairs[i].second].velocity.x - particles[pairs[i].first].velocity.x, particles[pairs[i].second].velocity.y - particles[pairs[i].first].velocity.y};
 					float relativeVelocity = velocity.dot(collisionNormal);
-					vector2f impulse;
-					impulse.x = (-(1 + restitution) * relativeVelocity) / ((particles[pairs[i].first].getArea()*density) + (particles[pairs[i].second].getArea()*density)) * collisionNormal.x;
-					impulse.y = (-(1 + restitution) * relativeVelocity) / ((particles[pairs[i].first].getArea()*density) + (particles[pairs[i].second].getArea()*density)) * collisionNormal.y;
+					float impulse = (-(1 + restitution) * relativeVelocity) / (1/(particles[pairs[i].first].getArea()*density) + 1/(particles[pairs[i].second].getArea()*density));
 
-					particles[pairs[i].first].velocity.x -= (impulse.x / (particles[pairs[i].first].getArea()*density));
-					particles[pairs[i].first].velocity.y -= (impulse.y / (particles[pairs[i].first].getArea()*density));
 
-					particles[pairs[i].second].velocity.x += (impulse.x / (particles[pairs[i].second].getArea()*density));
-					particles[pairs[i].second].velocity.y += (impulse.y / (particles[pairs[i].second].getArea()*density));
+					particles[pairs[i].first].velocity.x -= (impulse / (particles[pairs[i].first].getArea()*density) * collisionNormal.x * (1 - energyLoss));
+					particles[pairs[i].first].velocity.y -= (impulse / (particles[pairs[i].first].getArea()*density) * collisionNormal.y * (1 - energyLoss));
+
+					particles[pairs[i].second].velocity.x += (impulse / (particles[pairs[i].second].getArea()*density) * collisionNormal.x * (1 - energyLoss));
+					particles[pairs[i].second].velocity.y += (impulse / (particles[pairs[i].second].getArea()*density) * collisionNormal.y * (1 - energyLoss));
 
 				}
 			}
@@ -183,20 +185,19 @@ void simulationContainer::update()
 			{
 				for(int iii = 0; iii < int(staticLines.size()); ++iii)
 				{
-					if(staticLines[iii].checkParticleCollision(particles[i]) <= particles[i].radius)
+					if(staticLines[iii].checkParticleCollision(particles[i]) < particles[i].radius)
 					{
-						
-
 						vector2f normal = staticLines[iii].getNormal();
+						
 						normal.normalize(1);
 
-						particles[i].position.x += (particles[i].radius - staticLines[iii].checkParticleCollision(particles[i]))*normal.x;
-						particles[i].position.y += (particles[i].radius - staticLines[iii].checkParticleCollision(particles[i]))*normal.y;
+						particles[i].position.x += (particles[i].radius - staticLines[iii].checkParticleCollision(particles[i]) + 0.01) * normal.x;
+						particles[i].position.y += (particles[i].radius - staticLines[iii].checkParticleCollision(particles[i]) + 0.01) * normal.y;
 
 						float dot = 2 * (particles[i].velocity.x * normal.x + particles[i].velocity.y * normal.y);
 						
-						particles[i].velocity.x -= dot * normal.x * restitution;
-						particles[i].velocity.y -= dot * normal.y * restitution;
+						particles[i].velocity.x -= dot * normal.x * restitution * (1 - energyLoss);
+						particles[i].velocity.y -= dot * normal.y * restitution * (1 - energyLoss);
 
 					}
 				}
@@ -259,6 +260,11 @@ void simulationContainer::placeParticle(vector2f position, float radius, bool st
 void simulationContainer::switchRunning()
 {
 	running = running ? false : true;
+}
+
+bool simulationContainer::getRunning()
+{
+	return running;
 }
 
 void simulationContainer::addParticle(vector2f position, float radius)

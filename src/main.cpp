@@ -35,6 +35,7 @@ int main(int argc, char* args[])
 	float currentTime = SDL_GetTicks() * 0.001f;
 
 	bool running = true;
+	bool ticker = false;
 
 	while (running)
 	{
@@ -57,7 +58,7 @@ int main(int argc, char* args[])
 					{		
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container.placeParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), 1, 0);
+						container.placeParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), 3, 0);
 					}
 					break;
 				case SDL_MOUSEBUTTONUP:
@@ -65,7 +66,7 @@ int main(int argc, char* args[])
 					{
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container.placeParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), 1, 1);
+						container.placeParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), 3, 1);
 					}
 					break;
 				case SDL_KEYDOWN:
@@ -80,6 +81,9 @@ int main(int argc, char* args[])
 								break;
 							case SDLK_SPACE:
 								container.switchRunning();
+								break;
+							case SDLK_r:
+								ticker = true;
 								break;
 						}
 				case SDL_WINDOWEVENT:
@@ -117,6 +121,9 @@ int main(int argc, char* args[])
 				SDL_GetMouseState(&x, &y);	
 				container.addParticle(mainCamera.screenToWorld(&mainWindow, vector2f(x, y)), 1);
 			}
+		if(ticker && container.getRunning() == false)
+			container.switchRunning();
+
 		mainWindow.clear();
 
 		mainCamera.updateZoom();
@@ -130,6 +137,11 @@ int main(int argc, char* args[])
 		container.render(&mainCamera);
 
 		mainWindow.display();
+
+		if(ticker)
+			container.switchRunning();
+
+		ticker = false;
 
 		int frameTicks = SDL_GetTicks() - startTicks;
 		if (frameTicks < 1000 / (mainWindow.getRefreshRate()))

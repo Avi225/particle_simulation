@@ -52,6 +52,7 @@ class simulationContainer
 		void placeParticle(vector2f position, float radius, bool state);
 
 		void switchRunning();
+		bool getRunning();
 
 		void addParticle(vector2f position, float radius);
 		particle* getParticle(int id);
@@ -67,6 +68,7 @@ class simulationContainer
 
 		float density;
 		float restitution;
+		float energyLoss;
 
 		int iterationSteps;
 };
