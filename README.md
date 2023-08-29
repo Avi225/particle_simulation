@@ -24,6 +24,8 @@ https://github.com/Avi225/particle_simulation/assets/61160595/cc33de0f-358e-4c9c
 
 
 ## Instructions
+- Use `W`, `S`, `A` and `D` to move around
+- Use `Q` and `E` to zoom in and out
 - Drag `LMB` to spawn a particle
 - Hold `F` to spam particles
 - Press `spacebar` to pause/resume simulation
