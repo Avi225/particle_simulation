@@ -38,7 +38,8 @@ https://github.com/Avi225/particle_simulation/assets/61160595/cc33de0f-358e-4c9c
 2. Requires SDL2, SDL2_image and SDL2_ttf
 3. Example build command with mingw64:
    ```sh
-   g++ -c src/*.cpp -std=c++14 -O0 -Wall -I include -I C:/SDL2-w64/include && g++ -static-libgcc -static-libstdc++ *.o -o bin/x64/particles -mwindows -s -L C:/SDL2-w64/lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
+   g++ -c src/*.cpp -std=c++14 -O3 -Wall -I include -I C:/SDL2-w64/include && g++ -static-libgcc -static-libstdc++ *.o -o bin/x64/particles -mwindows -s -L C:/SDL2-w64/lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
+   ```
    
 
 ## Goals for v0.2.0
