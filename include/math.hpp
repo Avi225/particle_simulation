@@ -21,6 +21,26 @@ struct vector2f
 		: x(x), y(y)
 	{}
 
+	vector2f& operator+=(vector2f const& a);
+	vector2f& operator-=(vector2f const& a);
+	vector2f& operator*=(vector2f const& a);
+	vector2f& operator/=(vector2f const& a);
+
+	vector2f operator+(vector2f const& a);
+	vector2f operator-(vector2f const& a);
+	vector2f operator*(vector2f const& a);
+	vector2f operator/(vector2f const& a);
+
+	vector2f& operator+=(float const& a);
+	vector2f& operator-=(float const& a);
+	vector2f& operator*=(float const& a);
+	vector2f& operator/=(float const& a);
+
+	vector2f operator+(float const& a);
+	vector2f operator-(float const& a);
+	vector2f operator*(float const& a);
+	vector2f operator/(float const& a);
+
 	void print();
 
 	void normalize(float target);

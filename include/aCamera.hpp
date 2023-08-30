@@ -19,7 +19,9 @@ public:
 
 	void setSize(int w, int h);
 
-	vector2f screenToWorld(aWindow *window, vector2f a);
+	vector2f screenToWorld(vector2f a);
+	vector2f worldToScreen(vector2f a);
+	void worldToScreen(vector2f* a);
 
 	void renderLine(vector2f a, vector2f b, float thickness, SDL_Color color);
 

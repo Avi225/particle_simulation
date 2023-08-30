@@ -32,7 +32,7 @@ public:
 
 	void renderDisc(vector2f position, int radius, SDL_Color color);
 
-	void getSize(int *w, int *h);
+	void getSize(int* w, int* h);
 
 	void switchFullscreen();
 
