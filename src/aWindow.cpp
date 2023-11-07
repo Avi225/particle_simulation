@@ -17,8 +17,9 @@ aWindow::aWindow(const char* title, int width, int height)
 	SDL_SetRenderTarget(renderer, screenTexture);
 	background = {30, 30, 30, 255};
 	SDL_SetRenderDrawColor(renderer, background.r, background.g, background.b, background.a);
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-	font = TTF_OpenFont("res/font.ttf", 20);
+	font = TTF_OpenFont("res/font.ttf", 32);
 
 }
 
@@ -69,29 +70,19 @@ void aWindow::display()
 	SDL_SetRenderTarget(renderer, screenTexture);
 }
 
-void aWindow::renderLine(vector2f a, vector2f b, SDL_Color color)
-{
-	SDL_SetRenderDrawColor(renderer, color.r,  color.g,  color.b,  color.a);
-	SDL_RenderDrawLineF(renderer, a.x*resolutionMultiplier, a.y*resolutionMultiplier, b.x*resolutionMultiplier, b.y*resolutionMultiplier);
-	SDL_SetRenderDrawColor(renderer, background.r, background.g, background.b, background.a);
-
-}
-
 void aWindow::renderRect(SDL_Rect rect, SDL_Color color)
 {
 	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 	rect = {rect.x*resolutionMultiplier, rect.y*resolutionMultiplier, rect.w*resolutionMultiplier, rect.h*resolutionMultiplier};
 	SDL_RenderFillRect(renderer, &rect);
 	SDL_SetRenderDrawColor(renderer, background.r, background.g, background.b, background.a);
-
 }
 
 
 void aWindow::renderDisc(vector2f position, int radius, SDL_Color color)
 {
-	position.x = position.x * resolutionMultiplier;
-    position.y = position.y * resolutionMultiplier;
-    radius = radius * resolutionMultiplier;
+	position *= resolutionMultiplier;
+    radius *= resolutionMultiplier;
 
     int offsetx, offsety, d;
 
@@ -151,8 +142,7 @@ void aWindow::switchFullscreen()
 
 void aWindow::renderText(vector2f position, std::string text, int size, SDL_Color color)
 {
-	position.x = position.x * resolutionMultiplier;
-    position.y = position.y * resolutionMultiplier;
+	position *= resolutionMultiplier;
 
 	SDL_Surface *surface = TTF_RenderText_Blended(font, text.c_str(), color);
 	SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);

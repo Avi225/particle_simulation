@@ -21,7 +21,7 @@ staticLine::staticLine(staticPoint* na, staticPoint* nb)
 // Render the static line
 void staticLine::render(aCamera *camera)
 {
-	camera -> renderLine(a->position, b->position, 0.01, {255, 255, 255, 255});
+	camera -> renderLine(a->position, b->position, 0.01, {255, 255, 255, 255}, false);
 }
 
 // Render the normal vector of the static line
@@ -29,8 +29,7 @@ void staticLine::renderNormal(aCamera *camera)
 {
 	vector2f normal = getNormal();
 	normal.normalize(1);
-	camera -> renderLine({(a->position.x + b->position.x) / 2, (a->position.y + b->position.y) / 2}, {(a->position.x + b->position.x) / 2 + normal.x, (a->position.y + b->position.y) / 2 + normal.y}, 0.1, {0, 0, 255, 255});
-	//camera -> renderLine((a->position+b->position)/2, (a->position+b->position+normal)/2, 0.1, {0, 0, 255, 255});
+	camera -> renderLine((a->position + b->position) / 2, (a->position + b->position) / 2 + normal, 0.1, {0, 0, 255, 255}, false);
 }
 
 // Get the normal vector of the static line
@@ -60,7 +59,7 @@ float staticLine::checkParticleCollision(particle target)
 void particle::render(aCamera *camera)
 {
 	SDL_Color color = {255, 255, 255, 255};
-	camera -> renderDisc(position, radius, color);
+	camera -> renderDisc(position, radius, color, false);
 }
 
 // Render the velocity vector of the particle
@@ -72,7 +71,7 @@ void particle::renderVector(aCamera *camera)
 		position.y+velocity.y*10
 	};
 
-	camera -> renderLine(position, nVelocity, 0.1, {255, 0, 0, 255});
+	camera -> renderLine(position, nVelocity, 0.1, {255, 0, 0, 255}, false);
 }
 
 // Check if two particles collide
@@ -91,30 +90,15 @@ float particle::getArea()
 }
 
 // Constructor for the simulation container
-simulationContainer::simulationContainer(aWindow* window)
-:window(window)
+simulationContainer::simulationContainer()
 {
 	density = 1; // Universal density of each particle (TODO: custom density for each)
-	restitution = 0.9; // 1: Perfect bounce, all kinetic energy is conserved, 0: No bounce, all kinetic energy is lost.
+	restitution = 0.95; // 1: Perfect bounce, all kinetic energy is conserved, 0: No bounce, all kinetic energy is lost.
 	energyLoss = 0.2;
 
 	running = false;
 	isPlacingParticle = false;
-	iterationSteps = 12;
-
-	// Temporary map generation with static points and lines
-
-	staticPoints.push_back(staticPoint(vector2f(-20, 0)));
-	staticPoints.push_back(staticPoint(vector2f(-20, 20)));
-	staticPoints.push_back(staticPoint(vector2f(20, 20)));
-	staticPoints.push_back(staticPoint(vector2f(20, 0)));
-	staticPoints.push_back(staticPoint(vector2f(100, 0)));
-
-	staticLines.push_back(staticLine(&staticPoints[0], &staticPoints[1]));
-	staticLines.push_back(staticLine(&staticPoints[1], &staticPoints[2]));
-
-	staticLines.push_back(staticLine(&staticPoints[2], &staticPoints[3]));
-	staticLines.push_back(staticLine(&staticPoints[3], &staticPoints[3]));
+	iterationSteps = 64;
 }
 
 // Update (tick) the simulation
@@ -227,7 +211,7 @@ void simulationContainer::render(aCamera *camera)
 		SDL_GetMouseState(&x, &y);
 		vector2f mouse = {float(x), float(y)};
 		mouse = camera -> screenToWorld(mouse);
-		camera -> renderLine(placeParticlePosition, mouse, 0.1, {255, 0, 0, 255});
+		camera -> renderLine(placeParticlePosition, mouse, 0.1, {255, 0, 0, 255}, false);
 	}
 
  	// Render particles and static lines with respectively velocity and normal vectors 
@@ -262,6 +246,16 @@ void simulationContainer::placeParticle(vector2f position, float radius, bool st
 		isPlacingParticle = false;
 
 	}
+}
+
+void simulationContainer::addStaticPoint(vector2f position)
+{
+	staticPoints.push_back(staticPoint(position));
+}
+
+void simulationContainer::addStaticLine(int a, int b)
+{
+	staticLines.push_back(staticLine(&staticPoints[a], &staticPoints[b]));
 }
 
 // Toggle the simulation running state

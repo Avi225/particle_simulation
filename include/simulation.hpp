@@ -45,11 +45,14 @@ struct staticLine
 class simulationContainer
 {
 	public:
-		simulationContainer(aWindow* window);
+		simulationContainer();
 
 		void update();
 		void render(aCamera *camera);
 		void placeParticle(vector2f position, float radius, bool state);
+		
+		void addStaticPoint(vector2f position);
+		void addStaticLine(int a, int b);
 
 		void switchRunning();
 		bool getRunning();
@@ -58,7 +61,6 @@ class simulationContainer
 		particle* getParticle(int id);
 
 	private:
-		aWindow* window;
 		bool isPlacingParticle;
 		vector2f placeParticlePosition;
 		bool running;

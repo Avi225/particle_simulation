@@ -20,7 +20,7 @@ void grid::render(aCamera *camera)
 			position.y + cellHeight * height / 2 - cellHeight + cellHeight/2
 			};
 		
-		camera -> renderLine(a, b, 0.1, color);
+		camera -> renderLine(a, b, 0.1, color, false);
 	}
 
 	for(int i = 0; i < height; i++)
@@ -34,6 +34,6 @@ void grid::render(aCamera *camera)
 			position.x + cellWidth * width / 2 - cellWidth + cellWidth/2,
 			position.y - cellHeight * height / 2 + i * cellHeight + cellHeight/2
 			};
-		camera -> renderLine(a, b, 0.1, color);
+		camera -> renderLine(a, b, 0.1, color, false);
 	}
 }

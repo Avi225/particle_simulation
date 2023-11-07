@@ -7,26 +7,44 @@
 #include <string>
 
 struct menuElement
-{};
-
-struct text: public menuElement
 {
-	text(std::string nValue, int nSize);
+	virtual void render(aCamera* camera, vector2f position);
+	int height;
+};
+
+struct menuText : public menuElement
+{
+	menuText(std::string nValue, int nSize);
+	void render(aCamera* camera, vector2f position);
 
 	std::string value;
 	int size;
-	float height;
+};
+
+struct menuBreak : public menuElement
+{
+	menuBreak();
+	void render(aCamera* camera, vector2f position);
+};
+
+struct menuSliderF : public menuElement
+{
+	menuSliderF(float* nValue, float nMinValue, float nMaxValue);
+	void render(aCamera* camera, vector2f position);
+
+	float* value;
+	float minValue;
+	float maxValue;
 };
 
 class menu
 {
 public:
-	menu(){};
-
+	menu(vector2f nPosition);
+	void insertElement(menuElement* element);
 	void render(aCamera* camera);
 
 private:
-	std::vector<menuElement> elements;
+	std::vector<menuElement*> elements;
 	vector2f position;
-
 };

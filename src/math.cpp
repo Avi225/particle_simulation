@@ -63,29 +63,33 @@ vector2f& vector2f::operator/=(vector2f const& a)
 
 vector2f vector2f::operator+(vector2f const& a)
 {
-	this->x += a.x;
-	this->y += a.y;
-	return(*this);
+	vector2f b = *this;
+	b.x += a.x;
+	b.y += a.y;
+	return(b);
 }
 
 vector2f vector2f::operator-(vector2f const& a)
 {
-	this->x -= a.x;
-	this->y -= a.y;
-	return(*this);
+	vector2f b = *this;
+	b.x -= a.x;
+	b.y -= a.y;
+	return(b);
 }
 
 vector2f vector2f::operator*(vector2f const& a)
 {
-	this->x *= a.x;
-	this->y *= a.y;
-	return(*this);
+	vector2f b = *this;
+	b.x *= a.x;
+	b.y *= a.y;
+	return(b);
 }
 vector2f vector2f::operator/(vector2f const& a)
 {
-	this->x /= a.x;
-	this->y /= a.y;
-	return(*this);
+	vector2f b = *this;
+	b.x /= a.x;
+	b.y /= a.y;
+	return(b);
 }
 
 vector2f& vector2f::operator+=(float const& a)
@@ -118,30 +122,34 @@ vector2f& vector2f::operator/=(float const& a)
 
 vector2f vector2f::operator+(float const& a)
 {
-	this->x += a;
-	this->y += a;
-	return(*this);
+	vector2f b = *this;
+	b.x += a;
+	b.y += a;
+	return(b);
 }
 
 vector2f vector2f::operator-(float const& a)
 {
-	this->x -= a;
-	this->y -= a;
-	return(*this);
+	vector2f b = *this;
+	b.x -= a;
+	b.y -= a;
+	return(b);
 }
 
 vector2f vector2f::operator*(float const& a)
 {
-	this->x *= a;
-	this->y *= a;
-	return(*this);
+	vector2f b = *this;
+	b.x *= a;
+	b.y *= a;
+	return(b);
 }
 
 vector2f vector2f::operator/(float const& a)
 {
-	this->x /= a;
-	this->y /= a;
-	return(*this);
+	vector2f b = *this;
+	b.x /= a;
+	b.y /= a;
+	return(b);
 }
 
 void vector2f::print()

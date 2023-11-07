@@ -20,8 +20,7 @@ aCamera::aCamera(int nWidth, int nHeight, aWindow* nWindow)
 // Adjust the target position
 void aCamera::moveCamera(vector2f movement)
 {
-	movement.x /= (zoom/2);
-	movement.y /= (zoom/2);
+	movement /= (zoom/2);
 	targetPosition += movement;
 }
 
@@ -42,8 +41,7 @@ void aCamera::updateZoom()
 // Smoothly update the current position
 void aCamera::updatePosition()
 {
-	position.x += (targetPosition.x - position.x) / positionSmoothness;
-	position.y += (targetPosition.y - position.y) / positionSmoothness;
+	position += (targetPosition - position) / positionSmoothness;
 }
 
 // Set the size
@@ -59,11 +57,8 @@ vector2f aCamera::screenToWorld(vector2f a)
 	a.x -= width / 2;
 	a.y -= height / 2;
 
-	a.x /= (zoomScale * zoom);
-	a.y /= (zoomScale * zoom);
-
-	a.x -= position.x;
-	a.y -= position.y;
+	a /= (zoomScale * zoom);
+	a -= position;
 
 	return a;
 }
@@ -83,18 +78,31 @@ void aCamera::worldToScreen(vector2f* a)
 
 
 // Render a line on the screen
-void aCamera::renderLine(vector2f a, vector2f b, float thickness, SDL_Color color)
+void aCamera::renderLine(vector2f a, vector2f b, float thickness, SDL_Color color, bool UI)
 {
-	worldToScreen(&a);
-	worldToScreen(&b);
-
-	SDL_Rect rect = 
+	SDL_Rect rect;
+	if(!UI)
 	{
-		int((a.x+b.x)/2-thickness * zoomScale * zoom/2),
-		int((a.y+b.y)/2-a.distance(b)/2),
-		int(clamp(thickness * zoomScale * zoom, 1)),
-		int(a.distance(b))
-	};
+		worldToScreen(&a);
+		worldToScreen(&b);
+
+		rect = 
+		{
+			int((a.x+b.x)/2-thickness * zoomScale * zoom/2),
+			int((a.y+b.y)/2-a.distance(b)/2),
+			int(clamp(thickness * zoomScale * zoom, 1)),
+			int(a.distance(b))
+		};
+	}else
+	{
+		rect = 
+		{
+			int((a.x+b.x)/2-thickness),
+			int((a.y+b.y)/2-a.distance(b)/2),
+			int(thickness),
+			int(a.distance(b))
+		};
+	}
 	vector2f rotation = a.getVector(b);
 	rotation.normalize(1);
 	double angle = rotation.getAngle();
@@ -102,11 +110,13 @@ void aCamera::renderLine(vector2f a, vector2f b, float thickness, SDL_Color colo
 }
 
 // Render a colored disc (circle) on the screen
-void aCamera::renderDisc(vector2f discPosition, float radius, SDL_Color color)
+void aCamera::renderDisc(vector2f discPosition, float radius, SDL_Color color, bool UI)
 {
-	radius *= zoomScale * zoom;
-
-	worldToScreen(&discPosition);
+	if(!UI)
+	{
+		radius *= zoomScale * zoom;
+		worldToScreen(&discPosition);
+	}	
 
 	window -> renderDisc(discPosition, radius, color);
 }
@@ -122,7 +132,7 @@ void aCamera::renderRect(SDL_Rect rect, SDL_Color color, bool UI)
 		rect.y += position.y;
 
 		rect.x += width / 2;
-		rect.y += height / 2;
+		rect.y += width / 2;
 
 		window -> renderRect(rect, color);
 	}
@@ -131,12 +141,8 @@ void aCamera::renderRect(SDL_Rect rect, SDL_Color color, bool UI)
 // Render text on the screen
 void aCamera::renderText(vector2f textPosition, int size, std::string text, SDL_Color color, bool UI)
 {
-	if(UI)
-		window -> renderText(textPosition, text, size, color);
-	else
-	{
+	if(!UI)
 		worldToScreen(&textPosition);
 
-		window -> renderText(textPosition, text, size, color);
-	}
+	window -> renderText(textPosition, text, size, color);
 }

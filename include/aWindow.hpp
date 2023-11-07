@@ -26,8 +26,6 @@ public:
 
 	void display();
 
-	void renderLine(vector2f a, vector2f b, SDL_Color color);
-
 	void renderRect(SDL_Rect rect, SDL_Color color);
 
 	void renderDisc(vector2f position, int radius, SDL_Color color);

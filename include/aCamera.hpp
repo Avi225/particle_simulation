@@ -23,9 +23,9 @@ public:
 	vector2f worldToScreen(vector2f a);
 	void worldToScreen(vector2f* a);
 
-	void renderLine(vector2f a, vector2f b, float thickness, SDL_Color color);
+	void renderLine(vector2f a, vector2f b, float thickness, SDL_Color color, bool UI);
 
-	void renderDisc(vector2f discPosition, float radius, SDL_Color color);
+	void renderDisc(vector2f discPosition, float radius, SDL_Color color, bool UI);
 
 	void renderRect(SDL_Rect rect, SDL_Color color, bool UI);
 

@@ -12,6 +12,11 @@
 #include "simulation.hpp"
 #include "interface.hpp"
 
+float abc = 15;
+
+menu* generateMenu();
+simulationContainer* generateSimulationContainer();
+
 int main(int argc, char* args[])
 {
 	// Initialize SDL, SDL_image, and SDL_ttf libraries
@@ -24,7 +29,9 @@ int main(int argc, char* args[])
 	aCamera mainCamera(1920/2, 1080/2, &mainWindow);
 
 	// Create simulation container and grid
-	simulationContainer container(&mainWindow);
+	
+	simulationContainer* container = generateSimulationContainer();
+	menu* mainMenu = generateMenu();
 	grid mainGrid(vector2f(0, 0), 101, 101, 5, 5);
 
 	// Initialize SDL_Event for handling events
@@ -36,7 +43,6 @@ int main(int argc, char* args[])
 
 	bool running = true;
 	bool ticker = false;
-
 	while (running)
 	{
 		int startTicks = SDL_GetTicks();
@@ -60,7 +66,7 @@ int main(int argc, char* args[])
 					{		
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container.placeParticle(mainCamera.screenToWorld(vector2f(x, y)), 1, 0);
+						container -> placeParticle(mainCamera.screenToWorld(vector2f(x, y)), 4, 0);
 					}
 					break;
 				case SDL_MOUSEBUTTONUP:
@@ -69,7 +75,7 @@ int main(int argc, char* args[])
 					{
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container.placeParticle(mainCamera.screenToWorld(vector2f(x, y)), 1, 1);
+						container -> placeParticle(mainCamera.screenToWorld(vector2f(x, y)), 4, 1);
 					}
 					break;
 				case SDL_KEYDOWN:
@@ -86,7 +92,7 @@ int main(int argc, char* args[])
 								break;
 							case SDLK_SPACE:
 								// Toggle simulation running
-								container.switchRunning();
+								container -> switchRunning();
 								break;
 							case SDLK_r:
 								// Advance the simulation by 1 tick
@@ -111,6 +117,17 @@ int main(int argc, char* args[])
 		// Check keyboard state and perform camera movement/zoom
 		const Uint8 *state = SDL_GetKeyboardState(NULL);
 			
+		if(state[SDL_SCANCODE_LSHIFT])
+		{
+			if(state[SDL_SCANCODE_A])
+		   		mainCamera.moveCamera(vector2f(1.5, 0));
+			if(state[SDL_SCANCODE_D])
+			    mainCamera.moveCamera(vector2f(-1.5, 0));
+			if(state[SDL_SCANCODE_W])
+			    mainCamera.moveCamera(vector2f(0, 1.5));
+			if(state[SDL_SCANCODE_S])
+			    mainCamera.moveCamera(vector2f(0, -1.5));
+		}
 		if(state[SDL_SCANCODE_A])
 		    mainCamera.moveCamera(vector2f(0.5, 0));
 		if(state[SDL_SCANCODE_D])
@@ -127,12 +144,12 @@ int main(int argc, char* args[])
 		{
 			int x, y;
 			SDL_GetMouseState(&x, &y);	
-			container.addParticle(mainCamera.screenToWorld(vector2f(x, y)), .2);
+			container -> addParticle(mainCamera.screenToWorld(vector2f(x, y)), .8);
 		}
 
 		 // Advancing by 1 tick logic
-		if(ticker && container.getRunning() == false)
-			container.switchRunning();
+		if(ticker && container -> getRunning() == false)
+			container -> switchRunning();
 
 		mainWindow.clear();
 
@@ -142,13 +159,16 @@ int main(int argc, char* args[])
 
 		// Render
 		mainGrid.render(&mainCamera);
-		container.update();
-		container.render(&mainCamera);
+
+		container -> update();
+		container -> render(&mainCamera);
+
+		mainMenu -> render(&mainCamera);
 
 		mainWindow.display();
 
 		if(ticker)
-			container.switchRunning();
+			container -> switchRunning();
 
 		ticker = false;
 
@@ -163,4 +183,36 @@ int main(int argc, char* args[])
 	TTF_Quit();
 	SDL_Quit();
 	return 0;
+}
+
+menu* generateMenu()
+{
+	menu* mainMenu = new menu(vector2f(0, 0));
+	mainMenu -> insertElement(new menuText("test", 1));
+	mainMenu -> insertElement(new menuText("test", 1));
+	mainMenu -> insertElement(new menuText("test3", 1));
+	mainMenu -> insertElement(new menuText("test4", 1));
+	mainMenu -> insertElement(new menuSliderF(&abc, 0, 20));
+	return(mainMenu);
+}
+
+simulationContainer* generateSimulationContainer()
+{
+	simulationContainer* container = new simulationContainer;
+	// for(int i = 0; i < 10; ++i)
+	//  	for (int ii = 0; ii < 40; ++ii)
+	//  		container -> addParticle(vector2f(i*1.6-60, ii*1.6), 0.8);
+
+	container -> addStaticPoint(vector2f(-20, 0));
+	container -> addStaticPoint(vector2f(-20, 20));
+	container -> addStaticPoint(vector2f(20, 20));
+	container -> addStaticPoint(vector2f(20, 0));
+	container -> addStaticPoint(vector2f(100, 0));
+
+	container -> addStaticLine(0, 1);
+	container -> addStaticLine(1, 2);
+	container -> addStaticLine(2, 3);
+	container -> addStaticLine(3, 4);
+
+	return(container);
 }
