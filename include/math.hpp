@@ -3,59 +3,59 @@
 #include <cmath>
 #include <iostream>
 
-float mapRange(float value, float inMin, float inMax, float outMin, float outMax);
+double mapRange(double value, double inMin, double inMax, double outMin, double outMax);
 
-float aSquareRoot(const float x);
+double aSquareRoot(const double x);
 
-float clamp(float x, float min, float max);
+double clamp(double x, double min, double max);
 
-float clamp(float x, float min);
+double clamp(double x, double min);
 
-float aAbs(float value);
+double aAbs(double value);
 
-struct vector2f
+struct vector2d
 {
-	vector2f() {}
+	vector2d() {}
 
-	vector2f(float x, float y)
+	vector2d(double x, double y)
 		: x(x), y(y)
 	{}
 
-	vector2f& operator+=(vector2f const& a);
-	vector2f& operator-=(vector2f const& a);
-	vector2f& operator*=(vector2f const& a);
-	vector2f& operator/=(vector2f const& a);
+	vector2d& operator+=(vector2d const& a);
+	vector2d& operator-=(vector2d const& a);
+	vector2d& operator*=(vector2d const& a);
+	vector2d& operator/=(vector2d const& a);
 
-	vector2f operator+(vector2f const& a);
-	vector2f operator-(vector2f const& a);
-	vector2f operator*(vector2f const& a);
-	vector2f operator/(vector2f const& a);
+	vector2d operator+(vector2d const& a);
+	vector2d operator-(vector2d const& a);
+	vector2d operator*(vector2d const& a);
+	vector2d operator/(vector2d const& a);
 
-	vector2f& operator+=(float const& a);
-	vector2f& operator-=(float const& a);
-	vector2f& operator*=(float const& a);
-	vector2f& operator/=(float const& a);
+	vector2d& operator+=(double const& a);
+	vector2d& operator-=(double const& a);
+	vector2d& operator*=(double const& a);
+	vector2d& operator/=(double const& a);
 
-	vector2f operator+(float const& a);
-	vector2f operator-(float const& a);
-	vector2f operator*(float const& a);
-	vector2f operator/(float const& a);
+	vector2d operator+(double const& a);
+	vector2d operator-(double const& a);
+	vector2d operator*(double const& a);
+	vector2d operator/(double const& a);
 
 	void print();
 
-	void normalize(float target);
+	void normalize(double target);
 
-	float distance(vector2f target);
+	double distance(vector2d target);
 
-	float dot(vector2f target);
+	double dot(vector2d target);
 
-	void rotate(float degrees);
+	void rotate(double degrees);
 
-	float length();
+	double length();
 
-	vector2f getVector(vector2f b);
+	vector2d getVector(vector2d b);
 
-	float getAngle();
+	double getAngle();
 	
-	float x, y;
+	double x, y;
 };

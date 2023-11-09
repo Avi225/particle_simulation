@@ -6,45 +6,66 @@
 #include <vector>
 #include <string>
 
-struct menuElement
+struct tabElement
 {
-	virtual void render(aCamera* camera, vector2f position);
+	virtual void render(aCamera* camera, vector2d position);
 	int height;
+	vector2d adjustment;
 };
 
-struct menuText : public menuElement
+struct tabText : public tabElement
 {
-	menuText(std::string nValue, int nSize);
-	void render(aCamera* camera, vector2f position);
+	tabText(std::string nValue, int nSize);
+	void render(aCamera* camera, vector2d position);
 
 	std::string value;
 	int size;
 };
 
-struct menuBreak : public menuElement
+struct tabBreak : public tabElement
 {
-	menuBreak();
-	void render(aCamera* camera, vector2f position);
+	tabBreak();
+	void render(aCamera* camera, vector2d position);
 };
 
-struct menuSliderF : public menuElement
+struct tabSliderF : public tabElement
 {
-	menuSliderF(float* nValue, float nMinValue, float nMaxValue);
-	void render(aCamera* camera, vector2f position);
+	tabSliderF(double* nValue, double nMinValue, double nMaxValue);
+	void render(aCamera* camera, vector2d position);
 
-	float* value;
-	float minValue;
-	float maxValue;
+	double* value;
+	double minValue;
+	double maxValue;
+};
+
+class tab
+{
+public:
+	tab(vector2d nPosition, std::string nName);
+
+	void insertElement(tabElement* element);
+	
+	void render(aCamera* camera, vector2d globalPosition);
+
+	std::string getName();
+
+private:
+	std::vector<tabElement*> elements;
+	vector2d position;
+	int margin;
+	std::string name;
 };
 
 class menu
 {
 public:
-	menu(vector2f nPosition);
-	void insertElement(menuElement* element);
+	menu(vector2d nPosition);
+	void insertTab(tab* nTab);
 	void render(aCamera* camera);
 
 private:
-	std::vector<menuElement*> elements;
-	vector2f position;
+	vector2d position;
+	std::vector<tab*> tabs;
+	int activeTab;
+	int margin;
 };

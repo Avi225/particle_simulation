@@ -1,69 +1,114 @@
 #include "interface.hpp"
 
-menuText::menuText(std::string nValue, int nSize)
+tabText::tabText(std::string nValue, int nSize)
 :value(nValue), size(nSize)
 {
-	height = 48*size;
+	height = 22*size;
+	adjustment = {0, 0};
 }
 
-void menuText::render(aCamera* camera, vector2f position)
+void tabText::render(aCamera* camera, vector2d position)
 {
 	SDL_Color color = {255, 255, 255, 255};
 	camera -> renderText(position, size, value, color, 1);
 }
 
-menuBreak::menuBreak()
+tabBreak::tabBreak()
 {
-	height = 48;
+	height = 22;
+	adjustment = {0, 0};
 }
 
-void menuBreak::render(aCamera* camera, vector2f position)
+void tabBreak::render(aCamera* camera, vector2d position)
 {}
 
-menuSliderF::menuSliderF(float* nValue, float nMinValue, float nMaxValue)
+tabSliderF::tabSliderF(double* nValue, double nMinValue, double nMaxValue)
 : value(nValue), minValue(nMinValue), maxValue(nMaxValue)
 {
-	height = 64;
+	height = 22;
+	adjustment = {0, 11};
 }
 
-void menuSliderF::render(aCamera* camera, vector2f position)
+void tabSliderF::render(aCamera* camera, vector2d position)
 {
 	SDL_Color color = {255, 255, 255, 255};
-	camera -> renderLine(position, vector2f(position.x+150, position.y), 2, color, true);
-	vector2f pointPosition = position;
+	camera -> renderLine(position, vector2d(position.x+150, position.y), 2, color, true);
+	vector2d pointPosition = position;
 	pointPosition.x += mapRange(*value, minValue, maxValue, 0, 150);
-	camera -> renderDisc(pointPosition, 4, color, true);
+	camera -> renderDisc(pointPosition, 5, color, true);
 }
 
-menu::menu(vector2f nPosition)
-: position(nPosition)
-{}
+tab::tab(vector2d nPosition, std::string nName)
+: position(nPosition), name(nName)
+{
+	margin = 20;
+}
 
-void menu::insertElement(menuElement* element)
+void tab::insertElement(tabElement* element)
 {
 	elements.push_back(element);
 }
 
-void menu::render(aCamera* camera)
+void tab::render(aCamera* camera, vector2d globalPosition)
 {
 	int totalHeight = 0;
 	for(int i = 0; i < int(elements.size()); ++i)
+	{
 		totalHeight += elements[i] -> height;
+	}
+
 	SDL_Rect rect =
 	{
-		int(position.x),
-		int(position.y),
-		150,
-		totalHeight
+		int(position.x+globalPosition.x),
+		int(position.y+globalPosition.y),
+		150+margin*2,
+		totalHeight+margin*2
 	};
 	SDL_Color color = {0, 0, 0, 64};
 	camera -> renderRect(rect, color, true);
 	
-	vector2f elementPosition = position;
+	vector2d elementPosition = position + globalPosition + margin;
+
 	for(int i = 0; i < int(elements.size()); ++i)
 	{
-		elementPosition.y += elements[i] -> height/2;
-		elements[i] -> render(camera, elementPosition);
+		elements[i] -> render(camera, elementPosition+elements[i] -> adjustment);
+		elementPosition.y += elements[i] -> height;
+	}
+}
+
+std::string tab::getName()
+{
+	return name;
+}
+
+menu::menu(vector2d nPosition)
+: position(nPosition)
+{
+	margin = 20;
+	activeTab = -1;
+}
+
+void menu::insertTab(tab* nTab)
+{
+	tabs.push_back(nTab);
+}
+
+void menu::render(aCamera* camera)
+{
+	SDL_Color color = {0, 0, 0, 64};
+	for(int i = 0; i < int(tabs.size()); ++i)
+	{
+		SDL_Rect rect =
+		{
+			int(position.x)+i*104,
+			int(position.y),
+			96,
+			33
+		};
+		color = {0, 0, 0, 64};
+		camera -> renderRect(rect, color, true);
+		color = {255, 255, 255, 255};
+		camera -> renderText(vector2d(position.x+i*104+48-(tabs[i]->getName().length()*10/2), position.y+4), 1, tabs[i]->getName(), color, true);
 	}
 }
 

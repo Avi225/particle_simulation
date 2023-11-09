@@ -7,13 +7,13 @@
 class grid
 {
 public:
-	grid(vector2f position, int w, int h, float cellW, float cellH);
+	grid(vector2d position, int w, int h, double cellW, double cellH);
 	void render(aCamera *camera);
 
 private:
-	vector2f position;
+	vector2d position;
 	int width;
 	int height;
-	float cellWidth;
-	float cellHeight;
+	double cellWidth;
+	double cellHeight;
 };

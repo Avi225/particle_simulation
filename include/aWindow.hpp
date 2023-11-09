@@ -28,13 +28,13 @@ public:
 
 	void renderRect(SDL_Rect rect, SDL_Color color);
 
-	void renderDisc(vector2f position, int radius, SDL_Color color);
+	void renderDisc(vector2d position, int radius, SDL_Color color);
 
 	void getSize(int* w, int* h);
 
 	void switchFullscreen();
 
-	void renderText(vector2f position, std::string text, int size, SDL_Color color);
+	void renderText(vector2d position, std::string text, int size, SDL_Color color);
 
 	void renderTexture(SDL_Texture* texture, SDL_Rect destination, double angle, SDL_Color color);
 

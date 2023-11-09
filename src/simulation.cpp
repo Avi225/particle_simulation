@@ -1,7 +1,7 @@
 #include "simulation.hpp"
 
 // Particle class constructor
-particle::particle(vector2f nPosition, float nRadius)
+particle::particle(vector2d nPosition, double nRadius)
 : position(nPosition), radius(nRadius)
 {
 	velocity = {0, 0};
@@ -9,7 +9,7 @@ particle::particle(vector2f nPosition, float nRadius)
 }
 
 // StaticPoint class constructor
-staticPoint::staticPoint(vector2f nPosition)
+staticPoint::staticPoint(vector2d nPosition)
 : position(nPosition)
 {}
 
@@ -27,29 +27,29 @@ void staticLine::render(aCamera *camera)
 // Render the normal vector of the static line
 void staticLine::renderNormal(aCamera *camera)
 {
-	vector2f normal = getNormal();
+	vector2d normal = getNormal();
 	normal.normalize(1);
 	camera -> renderLine((a->position + b->position) / 2, (a->position + b->position) / 2 + normal, 0.1, {0, 0, 255, 255}, false);
 }
 
 // Get the normal vector of the static line
-vector2f staticLine::getNormal()
+vector2d staticLine::getNormal()
 {
-	vector2f normal = {(b->position.y - a->position.y), -(b->position.x - a->position.x)};
+	vector2d normal = {(b->position.y - a->position.y), -(b->position.x - a->position.x)};
 	return(normal);
 }
 
 // Check if a particle collides with this static line
-float staticLine::checkParticleCollision(particle target)
+double staticLine::checkParticleCollision(particle target)
 {
-	vector2f v = {target.position.x - a->position.x, target.position.y - a->position.y};
-	vector2f dir = {b->position.getVector(a->position)};
-	vector2f normal = getNormal();
-	float len = a->position.distance(b->position);
-	float pro = (v.x * dir.x + v.y * dir.y) / len;
+	vector2d v = {target.position.x - a->position.x, target.position.y - a->position.y};
+	vector2d dir = {b->position.getVector(a->position)};
+	vector2d normal = getNormal();
+	double len = a->position.distance(b->position);
+	double pro = (v.x * dir.x + v.y * dir.y) / len;
 	if(pro >= 0 && pro <= len)
 	{
-		float dis = aAbs(v.x * normal.x + v.y * normal.y) / len;
+		double dis = aAbs(v.x * normal.x + v.y * normal.y) / len;
 		return dis;
 	}
 	return target.radius+1;
@@ -65,7 +65,7 @@ void particle::render(aCamera *camera)
 // Render the velocity vector of the particle
 void particle::renderVector(aCamera *camera)
 {
-	vector2f nVelocity = 
+	vector2d nVelocity = 
 	{
 		position.x+velocity.x*10,
 		position.y+velocity.y*10
@@ -84,7 +84,7 @@ bool particle::checkCollision(particle b)
 }
 
 // Calculate the area of the particle
-float particle::getArea()
+double particle::getArea()
 {
 	return(3.14159265359 * radius * radius);
 }
@@ -93,12 +93,12 @@ float particle::getArea()
 simulationContainer::simulationContainer()
 {
 	density = 1; // Universal density of each particle (TODO: custom density for each)
-	restitution = 0.95; // 1: Perfect bounce, all kinetic energy is conserved, 0: No bounce, all kinetic energy is lost.
-	energyLoss = 0.2;
+	restitution = 0.7; // 1: Perfect bounce, all kinetic energy is conserved, 0: No bounce, all kinetic energy is lost.
+	energyLoss = 0;
 
 	running = false;
 	isPlacingParticle = false;
-	iterationSteps = 64;
+	iterationSteps = 16;
 }
 
 // Update (tick) the simulation
@@ -138,10 +138,10 @@ void simulationContainer::update()
 				if(particles[pairs[i].first].checkCollision(particles[pairs[i].second]))
 				{
 					// Calculate the amount of overlap between the two particles
-					float difference = particles[pairs[i].first].radius + particles[pairs[i].second].radius - particles[pairs[i].first].position.distance(particles[pairs[i].second].position);
+					double difference = particles[pairs[i].first].radius + particles[pairs[i].second].radius - particles[pairs[i].first].position.distance(particles[pairs[i].second].position);
 					
 					// Calculate the vector that represents the overlap direction
-					vector2f overlap = particles[pairs[i].first].position.getVector(particles[pairs[i].second].position);
+					vector2d overlap = particles[pairs[i].first].position.getVector(particles[pairs[i].second].position);
 					overlap.normalize(difference);
 					
 					// Adjust positions to resolve overlap
@@ -151,17 +151,17 @@ void simulationContainer::update()
 					particles[pairs[i].second].position.y -= overlap.y / 2;
 
 					// Calculate collision normal direction
-					vector2f collisionNormal = particles[pairs[i].first].position.getVector(particles[pairs[i].second].position);
-					float distance = aSquareRoot(collisionNormal.x * collisionNormal.x + collisionNormal.y * collisionNormal.y);
+					vector2d collisionNormal = particles[pairs[i].first].position.getVector(particles[pairs[i].second].position);
+					double distance = sqrt(collisionNormal.x * collisionNormal.x + collisionNormal.y * collisionNormal.y);
 					collisionNormal.x /= distance;
 					collisionNormal.y /= distance;
 
 					// Calculate relative velocity along the collision normal
-					vector2f velocity = {particles[pairs[i].second].velocity.x - particles[pairs[i].first].velocity.x, particles[pairs[i].second].velocity.y - particles[pairs[i].first].velocity.y};
-					float relativeVelocity = velocity.dot(collisionNormal);
+					vector2d velocity = {particles[pairs[i].second].velocity.x - particles[pairs[i].first].velocity.x, particles[pairs[i].second].velocity.y - particles[pairs[i].first].velocity.y};
+					double relativeVelocity = velocity.dot(collisionNormal);
 					
 					// Calculate collision impulse for energy exchange
-					float impulse = (-(1 + restitution) * relativeVelocity) / (1/(particles[pairs[i].first].getArea()*density) + 1/(particles[pairs[i].second].getArea()*density));
+					double impulse = (-(1 + restitution) * relativeVelocity) / (1/(particles[pairs[i].first].getArea()*density) + 1/(particles[pairs[i].second].getArea()*density));
 
 					// Update velocities based on collision impulse, subtracting energy loss
 					particles[pairs[i].first].velocity.x -= (impulse / (particles[pairs[i].first].getArea()*density) * collisionNormal.x * (1 - energyLoss));
@@ -180,7 +180,7 @@ void simulationContainer::update()
 					if(staticLines[iii].checkParticleCollision(particles[i]) < particles[i].radius)
 					{
 						// Get the normal vector of the static line
-						vector2f normal = staticLines[iii].getNormal();
+						vector2d normal = staticLines[iii].getNormal();
 						normal.normalize(1);
 
 						// Adjust positions to resolve overlap plus a small distance for stability
@@ -188,7 +188,7 @@ void simulationContainer::update()
 						particles[i].position.y += (particles[i].radius - staticLines[iii].checkParticleCollision(particles[i]) + 0.01) * normal.y;
 						
 						// Calculate the dot product of particle velocity and normal vector
-						float dot = 2 * (particles[i].velocity.x * normal.x + particles[i].velocity.y * normal.y);
+						double dot = 2 * (particles[i].velocity.x * normal.x + particles[i].velocity.y * normal.y);
 						
 						 // Reflect the particle's velocity based on the collision normal and the cooficient of restitution
 						particles[i].velocity.x -= dot * normal.x * restitution * (1 - energyLoss);
@@ -209,7 +209,7 @@ void simulationContainer::render(aCamera *camera)
 	{
 		int x, y;
 		SDL_GetMouseState(&x, &y);
-		vector2f mouse = {float(x), float(y)};
+		vector2d mouse = {double(x), double(y)};
 		mouse = camera -> screenToWorld(mouse);
 		camera -> renderLine(placeParticlePosition, mouse, 0.1, {255, 0, 0, 255}, false);
 	}
@@ -230,7 +230,7 @@ void simulationContainer::render(aCamera *camera)
 }
 
 // Start placing and place a particle at a specified position with velocity vector pointing towards the mouse release location
-void simulationContainer::placeParticle(vector2f position, float radius, bool state)
+void simulationContainer::placeParticle(vector2d position, double radius, bool state)
 {
 	if(!state)
 	{
@@ -248,7 +248,7 @@ void simulationContainer::placeParticle(vector2f position, float radius, bool st
 	}
 }
 
-void simulationContainer::addStaticPoint(vector2f position)
+void simulationContainer::addStaticPoint(vector2d position)
 {
 	staticPoints.push_back(staticPoint(position));
 }
@@ -271,7 +271,7 @@ bool simulationContainer::getRunning()
 }
 
 // Add a particle to the simulation
-void simulationContainer::addParticle(vector2f position, float radius)
+void simulationContainer::addParticle(vector2d position, double radius)
 {
 	particles.push_back(particle(position, radius));
 }

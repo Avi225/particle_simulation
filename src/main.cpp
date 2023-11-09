@@ -12,7 +12,7 @@
 #include "simulation.hpp"
 #include "interface.hpp"
 
-float abc = 15;
+double abc = 15;
 
 menu* generateMenu();
 simulationContainer* generateSimulationContainer();
@@ -32,22 +32,22 @@ int main(int argc, char* args[])
 	
 	simulationContainer* container = generateSimulationContainer();
 	menu* mainMenu = generateMenu();
-	grid mainGrid(vector2f(0, 0), 101, 101, 5, 5);
+	grid mainGrid(vector2d(0, 0), 101, 101, 5, 5);
 
 	// Initialize SDL_Event for handling events
 	SDL_Event event;
 
-	const float timeStep = 0.01f;
-	float accumulator = 0.0f;
-	float currentTime = SDL_GetTicks() * 0.001f;
+	const double timeStep = 0.01f;
+	double accumulator = 0.0f;
+	double currentTime = SDL_GetTicks() * 0.001f;
 
 	bool running = true;
 	bool ticker = false;
 	while (running)
 	{
 		int startTicks = SDL_GetTicks();
-		float newTime = SDL_GetTicks() * 0.001f;
-		float frameTime = newTime - currentTime;
+		double newTime = SDL_GetTicks() * 0.001f;
+		double frameTime = newTime - currentTime;
 		currentTime = newTime;
 		accumulator += frameTime;
 		while (accumulator > + timeStep)
@@ -66,7 +66,7 @@ int main(int argc, char* args[])
 					{		
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container -> placeParticle(mainCamera.screenToWorld(vector2f(x, y)), 4, 0);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 3, 0);
 					}
 					break;
 				case SDL_MOUSEBUTTONUP:
@@ -75,7 +75,7 @@ int main(int argc, char* args[])
 					{
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container -> placeParticle(mainCamera.screenToWorld(vector2f(x, y)), 4, 1);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 3, 1);
 					}
 					break;
 				case SDL_KEYDOWN:
@@ -120,22 +120,22 @@ int main(int argc, char* args[])
 		if(state[SDL_SCANCODE_LSHIFT])
 		{
 			if(state[SDL_SCANCODE_A])
-		   		mainCamera.moveCamera(vector2f(1.5, 0));
+		   		mainCamera.moveCamera(vector2d(1.5, 0));
 			if(state[SDL_SCANCODE_D])
-			    mainCamera.moveCamera(vector2f(-1.5, 0));
+			    mainCamera.moveCamera(vector2d(-1.5, 0));
 			if(state[SDL_SCANCODE_W])
-			    mainCamera.moveCamera(vector2f(0, 1.5));
+			    mainCamera.moveCamera(vector2d(0, 1.5));
 			if(state[SDL_SCANCODE_S])
-			    mainCamera.moveCamera(vector2f(0, -1.5));
+			    mainCamera.moveCamera(vector2d(0, -1.5));
 		}
 		if(state[SDL_SCANCODE_A])
-		    mainCamera.moveCamera(vector2f(0.5, 0));
+		    mainCamera.moveCamera(vector2d(0.5, 0));
 		if(state[SDL_SCANCODE_D])
-		    mainCamera.moveCamera(vector2f(-0.5, 0));
+		    mainCamera.moveCamera(vector2d(-0.5, 0));
 		if(state[SDL_SCANCODE_W])
-		    mainCamera.moveCamera(vector2f(0, 0.5));
+		    mainCamera.moveCamera(vector2d(0, 0.5));
 		if(state[SDL_SCANCODE_S])
-		    mainCamera.moveCamera(vector2f(0, -0.5));
+		    mainCamera.moveCamera(vector2d(0, -0.5));
 		if(state[SDL_SCANCODE_E])
 		    mainCamera.zoomCamera(0.1);
 		if(state[SDL_SCANCODE_Q])
@@ -144,7 +144,7 @@ int main(int argc, char* args[])
 		{
 			int x, y;
 			SDL_GetMouseState(&x, &y);	
-			container -> addParticle(mainCamera.screenToWorld(vector2f(x, y)), .8);
+			container -> addParticle(mainCamera.screenToWorld(vector2d(x, y)), .5);
 		}
 
 		 // Advancing by 1 tick logic
@@ -187,12 +187,24 @@ int main(int argc, char* args[])
 
 menu* generateMenu()
 {
-	menu* mainMenu = new menu(vector2f(0, 0));
-	mainMenu -> insertElement(new menuText("test", 1));
-	mainMenu -> insertElement(new menuText("test", 1));
-	mainMenu -> insertElement(new menuText("test3", 1));
-	mainMenu -> insertElement(new menuText("test4", 1));
-	mainMenu -> insertElement(new menuSliderF(&abc, 0, 20));
+	menu* mainMenu = new menu(vector2d(16, 16));
+	tab* test1 = new tab(vector2d(0, 0), "main");
+	tab* test2 = new tab(vector2d(0, 0), "settings");
+
+	test1 -> insertElement(new tabText("text", 1));
+	test1 -> insertElement(new tabText("not text, no?", 1));
+	test1 -> insertElement(new tabSliderF(&abc, 0, 35));
+
+	test2 -> insertElement(new tabText("AAAAAAAA", 1));
+	test2 -> insertElement(new tabText("dolor", 1));
+	test2 -> insertElement(new tabSliderF(&abc, 0, 15));
+	test2 -> insertElement(new tabText("lorem", 1));
+	test2 -> insertElement(new tabText("ipsum", 1));
+
+	mainMenu -> insertTab(test1);
+	mainMenu -> insertTab(test2);
+	mainMenu -> insertTab(test2);
+	mainMenu -> insertTab(test2);
 	return(mainMenu);
 }
 
@@ -201,13 +213,13 @@ simulationContainer* generateSimulationContainer()
 	simulationContainer* container = new simulationContainer;
 	// for(int i = 0; i < 10; ++i)
 	//  	for (int ii = 0; ii < 40; ++ii)
-	//  		container -> addParticle(vector2f(i*1.6-60, ii*1.6), 0.8);
+	//  		container -> addParticle(vector2d(i*1.6-60, ii*1.6), 0.8);
 
-	container -> addStaticPoint(vector2f(-20, 0));
-	container -> addStaticPoint(vector2f(-20, 20));
-	container -> addStaticPoint(vector2f(20, 20));
-	container -> addStaticPoint(vector2f(20, 0));
-	container -> addStaticPoint(vector2f(100, 0));
+	container -> addStaticPoint(vector2d(-20, 0));
+	container -> addStaticPoint(vector2d(-20, 20));
+	container -> addStaticPoint(vector2d(20, 20));
+	container -> addStaticPoint(vector2d(20, 0));
+	container -> addStaticPoint(vector2d(100, 0));
 
 	container -> addStaticLine(0, 1);
 	container -> addStaticLine(1, 2);

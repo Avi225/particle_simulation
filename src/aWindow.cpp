@@ -3,7 +3,7 @@
 aWindow::aWindow(const char* title, int width, int height)
 	: window(NULL), renderer(NULL)
 {
-	resolutionMultiplier = 2;
+	resolutionMultiplier = 1;
 	window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
 	SDL_SetWindowResizable(window, SDL_TRUE);
 
@@ -19,7 +19,7 @@ aWindow::aWindow(const char* title, int width, int height)
 	SDL_SetRenderDrawColor(renderer, background.r, background.g, background.b, background.a);
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-	font = TTF_OpenFont("res/font.ttf", 32);
+	font = TTF_OpenFont("res/font.ttf", 16*resolutionMultiplier);
 
 }
 
@@ -79,7 +79,7 @@ void aWindow::renderRect(SDL_Rect rect, SDL_Color color)
 }
 
 
-void aWindow::renderDisc(vector2f position, int radius, SDL_Color color)
+void aWindow::renderDisc(vector2d position, int radius, SDL_Color color)
 {
 	position *= resolutionMultiplier;
     radius *= resolutionMultiplier;
@@ -98,11 +98,11 @@ void aWindow::renderDisc(vector2f position, int radius, SDL_Color color)
         SDL_RenderDrawLine(renderer, position.x - offsetx, position.y + offsety, position.x + offsetx, position.y + offsety);
         SDL_RenderDrawLine(renderer, position.x - offsetx, position.y - offsety, position.x + offsetx, position.y - offsety);
         SDL_RenderDrawLine(renderer, position.x - offsety, position.y - offsetx, position.x + offsety, position.y - offsetx);
-        
+      
         if (d >= 2*offsetx)
         {
             d -= 2*offsetx + 1;
-            offsetx +=1;	
+            offsetx +=1;
         }
         else if (d < 2 * (radius - offsety))
         {
@@ -140,7 +140,7 @@ void aWindow::switchFullscreen()
 	}
 }
 
-void aWindow::renderText(vector2f position, std::string text, int size, SDL_Color color)
+void aWindow::renderText(vector2d position, std::string text, int size, SDL_Color color)
 {
 	position *= resolutionMultiplier;
 

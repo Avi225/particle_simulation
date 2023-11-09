@@ -1,13 +1,13 @@
 #include "utility.hpp"
 
-grid::grid(vector2f position, int w, int h, float cellW, float cellH)
+grid::grid(vector2d position, int w, int h, double cellW, double cellH)
 :width(w), height(h), cellWidth(cellW), cellHeight(cellH)
 {}
 
 void grid::render(aCamera *camera)
 {
 	SDL_Color color = {50, 50, 50, 255};
-	vector2f a, b;
+	vector2d a, b;
 	for(int i = 0; i < width; i++)
 	{
 		a = {
