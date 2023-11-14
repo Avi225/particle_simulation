@@ -61,11 +61,13 @@ class menu
 public:
 	menu(vector2d nPosition);
 	void insertTab(tab* nTab);
+	void updateTabs();
 	void render(aCamera* camera);
+	
 
 private:
 	vector2d position;
 	std::vector<tab*> tabs;
-	int activeTab;
+	std::vector<std::vector<bool>> tabStates;
 	int margin;
 };

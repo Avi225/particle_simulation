@@ -66,7 +66,7 @@ int main(int argc, char* args[])
 					{		
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 3, 0);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 2.5, 0);
 					}
 					break;
 				case SDL_MOUSEBUTTONUP:
@@ -75,7 +75,7 @@ int main(int argc, char* args[])
 					{
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 3, 1);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 2.5, 1);
 					}
 					break;
 				case SDL_KEYDOWN:
@@ -145,6 +145,7 @@ int main(int argc, char* args[])
 			int x, y;
 			SDL_GetMouseState(&x, &y);	
 			container -> addParticle(mainCamera.screenToWorld(vector2d(x, y)), .5);
+			
 		}
 
 		 // Advancing by 1 tick logic
@@ -163,6 +164,7 @@ int main(int argc, char* args[])
 		container -> update();
 		container -> render(&mainCamera);
 
+		mainMenu -> updateTabs();
 		mainMenu -> render(&mainCamera);
 
 		mainWindow.display();
@@ -188,8 +190,8 @@ int main(int argc, char* args[])
 menu* generateMenu()
 {
 	menu* mainMenu = new menu(vector2d(16, 16));
-	tab* test1 = new tab(vector2d(0, 0), "main");
-	tab* test2 = new tab(vector2d(0, 0), "settings");
+	tab* test1 = new tab(vector2d(0, 41), "main");
+	tab* test2 = new tab(vector2d(0, 41), "settings");
 
 	test1 -> insertElement(new tabText("text", 1));
 	test1 -> insertElement(new tabText("not text, no?", 1));

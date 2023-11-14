@@ -61,10 +61,10 @@ void tab::render(aCamera* camera, vector2d globalPosition)
 	{
 		int(position.x+globalPosition.x),
 		int(position.y+globalPosition.y),
-		150+margin*2,
+		160+margin*2,
 		totalHeight+margin*2
 	};
-	SDL_Color color = {0, 0, 0, 64};
+	SDL_Color color = {0, 0, 0, 225};
 	camera -> renderRect(rect, color, true);
 	
 	vector2d elementPosition = position + globalPosition + margin;
@@ -85,12 +85,55 @@ menu::menu(vector2d nPosition)
 : position(nPosition)
 {
 	margin = 20;
-	activeTab = -1;
 }
 
 void menu::insertTab(tab* nTab)
 {
 	tabs.push_back(nTab);
+	tabStates.push_back({false, false, false});
+}
+
+void menu::updateTabs()
+{
+	int x, y;
+	SDL_Rect rect;
+
+	bool mouseOver = false;
+	bool LMBdown = false;
+
+	if(SDL_GetMouseState(&x,&y) & SDL_BUTTON_LMASK)
+		LMBdown = true;
+
+
+	for(int i = 0; i < int(tabs.size()); ++i)
+	{
+		rect =
+			{
+				int(position.x)+i*104,
+				int(position.y),
+				96,
+				33
+			};
+		mouseOver = x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
+
+		if(tabStates[i][1] && !LMBdown && mouseOver)
+		{
+			for(int ii = 0; ii < int(tabs.size()); ++ii)
+			{	
+				if(ii==i)
+					tabStates[ii][2] = !tabStates[ii][2];
+				else
+					tabStates[ii][2] = false;	
+			}
+		}
+
+        tabStates[i][0] = (mouseOver) ? true : false;
+        tabStates[i][1] = (tabStates[i][0] && LMBdown) ? true : false;
+        //printf("%i, %i, %i || ", int(tabStates[i][0]), int(tabStates[i][1]), int(tabStates[i][2]));
+   		
+ 
+	}
+	printf("\n\n");
 }
 
 void menu::render(aCamera* camera)
@@ -105,10 +148,21 @@ void menu::render(aCamera* camera)
 			96,
 			33
 		};
-		color = {0, 0, 0, 64};
+
+		color = {255, 255, 255, 0};
+		color.a = 128+48*(tabStates[i][0]+tabStates[i][1]);
+		if(tabStates[i][2])
+			color = {0, 0, 0, 223};
+
 		camera -> renderRect(rect, color, true);
-		color = {255, 255, 255, 255};
+
+		color = {0, 0, 0, 255};
+		if(tabStates[i][2])
+			color = {255, 255, 255, 255};
+
 		camera -> renderText(vector2d(position.x+i*104+48-(tabs[i]->getName().length()*10/2), position.y+4), 1, tabs[i]->getName(), color, true);
+		if(tabStates[i][2])
+			tabs[i] -> render(camera, position);
 	}
 }
 

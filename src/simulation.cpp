@@ -104,6 +104,7 @@ simulationContainer::simulationContainer()
 // Update (tick) the simulation
 void simulationContainer::update()
 {
+	//printf("%i\n", particles.size());
 	if(running)
 	{
 		// Create pairs of particle indices to check for collisions

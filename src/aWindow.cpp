@@ -3,7 +3,7 @@
 aWindow::aWindow(const char* title, int width, int height)
 	: window(NULL), renderer(NULL)
 {
-	resolutionMultiplier = 1;
+	resolutionMultiplier = 2;
 	window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
 	SDL_SetWindowResizable(window, SDL_TRUE);
 
