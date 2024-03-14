@@ -14,7 +14,9 @@ aCamera::aCamera(int nWidth, int nHeight, aWindow* nWindow)
 	zoomSmoothness = 8;
 	targetZoom = 1;
 	targetPosition = vector2d(0, 0);
-	basic = window -> loadTexture("res/basic.png"); // Used for rendering with downscaling to antialias the final image
+
+	textures["basic"] = window -> loadTexture("res/basic.png"); // Used for rendering with downscaling to antialias the final image
+	textures["disc"] = window -> loadTexture("res/disc.png");
 }
 
 // Adjust the target position
@@ -106,7 +108,7 @@ void aCamera::renderLine(vector2d a, vector2d b, double thickness, SDL_Color col
 	vector2d rotation = a.getVector(b);
 	rotation.normalize(1);
 	double angle = rotation.getAngle();
-	window -> renderTexture(basic, rect, angle, color); 
+	window -> renderTexture(textures["basic"], rect, angle, color); 
 }
 
 // Render a colored disc (circle) on the screen
@@ -116,9 +118,23 @@ void aCamera::renderDisc(vector2d discPosition, double radius, SDL_Color color, 
 	{
 		radius *= zoomScale * zoom;
 		worldToScreen(&discPosition);
-	}	
+		discPosition -= radius;
 
-	window -> renderDisc(discPosition, radius, color);
+		SDL_Rect rect = 
+		{
+			int(discPosition.x),
+			int(discPosition.y),
+			int(2*radius),
+			int(2*radius)
+		};
+
+		window -> renderTexture(textures["disc"], rect, 0, color);
+
+	}else
+	{
+		window -> renderDisc(discPosition, radius, color);
+	}
+
 }
 
 // Render a colored rectangle on the screen

@@ -133,7 +133,7 @@ void menu::updateTabs()
    		
  
 	}
-	printf("\n\n");
+	//printf("\n\n");
 }
 
 void menu::render(aCamera* camera)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <unordered_map>
 
 #include "aWindow.hpp"
 #include "math.hpp"
@@ -40,7 +41,7 @@ private:
 	vector2d targetPosition;
 	double positionSmoothness;
 
-	SDL_Texture* basic;
+	std::unordered_map<std::string, SDL_Texture*> textures;
 
 	double zoomMin;
 	double zoomMax;

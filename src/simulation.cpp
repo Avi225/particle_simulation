@@ -1,6 +1,15 @@
 #include "simulation.hpp"
 
 // Particle class constructor
+
+particle::particle()
+: position({0, 0}), radius(1)
+{
+	velocity = {0, 0};
+	acceleration = {0, 0.01}; // Apply a small downards gravity force (TODO: move gravity application outside of the constructor)
+}
+
+
 particle::particle(vector2d nPosition, double nRadius)
 : position(nPosition), radius(nRadius)
 {
@@ -40,7 +49,7 @@ vector2d staticLine::getNormal()
 }
 
 // Check if a particle collides with this static line
-double staticLine::checkParticleCollision(particle target)
+double staticLine::checkParticleCollision(const particle& target)
 {
 	vector2d v = {target.position.x - a->position.x, target.position.y - a->position.y};
 	vector2d dir = {b->position.getVector(a->position)};
@@ -95,112 +104,117 @@ simulationContainer::simulationContainer()
 	density = 1; // Universal density of each particle (TODO: custom density for each)
 	restitution = 0.7; // 1: Perfect bounce, all kinetic energy is conserved, 0: No bounce, all kinetic energy is lost.
 	energyLoss = 0;
+	friction = 0.001;
+    overlapGap = 0.01;
 
 	running = false;
 	isPlacingParticle = false;
 	iterationSteps = 16;
 }
 
-// Update (tick) the simulation
+
 void simulationContainer::update()
 {
-	//printf("%i\n", particles.size());
-	if(running)
-	{
-		// Create pairs of particle indices to check for collisions
-		std::vector<std::pair<int, int>> pairs;
+    if (!running)
+        return;
 
-		for(int i = 0; i < int(particles.size()); ++i)
-			for(int j = i + 1; j < int(particles.size()); j++)
-				if(i != j)
-					pairs.push_back(std::make_pair(i, j));
+    for (auto& particle : particles)
+    {
+        // Calculate friction forces
+        double frictionX = (particle.velocity.x > 0) ? -friction : friction;
+        double frictionY = (particle.velocity.y > 0) ? -friction : friction;
 
-		// Update particle positions and velocities
-		for(int i = 0; i < int(particles.size()); i++)
-		{
-			// Accelerate particles using their assigned accelerations
-			particles[i].velocity.x += particles[i].acceleration.x;
-			particles[i].velocity.y += particles[i].acceleration.y;
+        // Update particle velocities with accelerations
+        particle.velocity.x += particle.acceleration.x;
+        particle.velocity.y += particle.acceleration.y;
 
-			// Update particle position based on its velocity
-			particles[i].position.x += particles[i].velocity.x;
-			particles[i].position.y += particles[i].velocity.y;
-		
-			// Apply a small friction-like force to slow down particles over time
-			particles[i].velocity.x += (particles[i].velocity.x > 0) ? -0.001 : 0.001;
-			particles[i].velocity.y += (particles[i].velocity.y > 0) ? -0.001 : 0.001;
-		}
-		
-		for(int ii = 0; ii < iterationSteps; ++ii)
-		{
-			// Collision resolution for particles
-			for(int i = 0; i < int(pairs.size()); ++i)
-			{
-				if(particles[pairs[i].first].checkCollision(particles[pairs[i].second]))
-				{
-					// Calculate the amount of overlap between the two particles
-					double difference = particles[pairs[i].first].radius + particles[pairs[i].second].radius - particles[pairs[i].first].position.distance(particles[pairs[i].second].position);
-					
-					// Calculate the vector that represents the overlap direction
-					vector2d overlap = particles[pairs[i].first].position.getVector(particles[pairs[i].second].position);
-					overlap.normalize(difference);
-					
-					// Adjust positions to resolve overlap
-					particles[pairs[i].first].position.x += overlap.x / 2;
-					particles[pairs[i].first].position.y += overlap.y / 2;
-					particles[pairs[i].second].position.x -= overlap.x / 2;
-					particles[pairs[i].second].position.y -= overlap.y / 2;
+        // Update particle positions based on velocities
+        particle.position.x += particle.velocity.x;
+        particle.position.y += particle.velocity.y;
 
-					// Calculate collision normal direction
-					vector2d collisionNormal = particles[pairs[i].first].position.getVector(particles[pairs[i].second].position);
-					double distance = sqrt(collisionNormal.x * collisionNormal.x + collisionNormal.y * collisionNormal.y);
-					collisionNormal.x /= distance;
-					collisionNormal.y /= distance;
+        // Apply friction-like force
+        particle.velocity.x += frictionX;
+        particle.velocity.y += frictionY;
+    }
 
-					// Calculate relative velocity along the collision normal
-					vector2d velocity = {particles[pairs[i].second].velocity.x - particles[pairs[i].first].velocity.x, particles[pairs[i].second].velocity.y - particles[pairs[i].first].velocity.y};
-					double relativeVelocity = velocity.dot(collisionNormal);
-					
-					// Calculate collision impulse for energy exchange
-					double impulse = (-(1 + restitution) * relativeVelocity) / (1/(particles[pairs[i].first].getArea()*density) + 1/(particles[pairs[i].second].getArea()*density));
+    for (int ii = 0; ii < iterationSteps; ++ii)
+    {
+        // Collision resolution for particles
+        for (size_t a = 0; a < particles.size(); ++a)
+        {
+            for (size_t b = a + 1; b < particles.size(); ++b)
+            {
+                if (a != b)
+                {
+                    // Calculate particle radii sum and overlap distance
+                    double radiiSum = particles[a].radius + particles[b].radius;
+                    double overlapDistance = radiiSum - particles[a].position.distance(particles[b].position);
 
-					// Update velocities based on collision impulse, subtracting energy loss
-					particles[pairs[i].first].velocity.x -= (impulse / (particles[pairs[i].first].getArea()*density) * collisionNormal.x * (1 - energyLoss));
-					particles[pairs[i].first].velocity.y -= (impulse / (particles[pairs[i].first].getArea()*density) * collisionNormal.y * (1 - energyLoss));
-					particles[pairs[i].second].velocity.x += (impulse / (particles[pairs[i].second].getArea()*density) * collisionNormal.x * (1 - energyLoss));
-					particles[pairs[i].second].velocity.y += (impulse / (particles[pairs[i].second].getArea()*density) * collisionNormal.y * (1 - energyLoss));
+                    if (overlapDistance >= 0)
+                    {
+                        // Calculate overlap direction vector
+                        vector2d overlap = particles[a].position.getVector(particles[b].position);
+                        overlap.normalize(overlapDistance);
 
-				}
-			}
+                        // Adjust particle positions to resolve overlap
+                        particles[a].position.x += overlap.x / 2;
+                        particles[a].position.y += overlap.y / 2;
+                        particles[b].position.x -= overlap.x / 2;
+                        particles[b].position.y -= overlap.y / 2;
 
-			// Collision resolution with static lines
-			for(int i = 0; i < int(particles.size()); ++i)
-			{
-				for(int iii = 0; iii < int(staticLines.size()); ++iii)
-				{
-					if(staticLines[iii].checkParticleCollision(particles[i]) < particles[i].radius)
-					{
-						// Get the normal vector of the static line
-						vector2d normal = staticLines[iii].getNormal();
-						normal.normalize(1);
+                        // Calculate collision normal direction
+                        vector2d collisionNormal = particles[a].position.getVector(particles[b].position);
+                        collisionNormal.normalize(1);
 
-						// Adjust positions to resolve overlap plus a small distance for stability
-						particles[i].position.x += (particles[i].radius - staticLines[iii].checkParticleCollision(particles[i]) + 0.01) * normal.x;
-						particles[i].position.y += (particles[i].radius - staticLines[iii].checkParticleCollision(particles[i]) + 0.01) * normal.y;
-						
-						// Calculate the dot product of particle velocity and normal vector
-						double dot = 2 * (particles[i].velocity.x * normal.x + particles[i].velocity.y * normal.y);
-						
-						 // Reflect the particle's velocity based on the collision normal and the cooficient of restitution
-						particles[i].velocity.x -= dot * normal.x * restitution * (1 - energyLoss);
-						particles[i].velocity.y -= dot * normal.y * restitution * (1 - energyLoss);
+                        // Calculate relative velocity along collision normal
+                        vector2d velocity = {particles[b].velocity.x - particles[a].velocity.x,
+                                             particles[b].velocity.y - particles[a].velocity.y};
+                        double relativeVelocity = velocity.dot(collisionNormal);
 
-					}
-				}
-			}
-		}	
-	}
+                        // Calculate collision impulse for energy exchange
+                        double impulse = -((1 + restitution) * relativeVelocity) / (1 / (particles[a].getArea() * density) + 1 / (particles[b].getArea() * density));
+
+                        // Update velocities based on collision impulse
+                        particles[a].velocity.x -= (impulse / (particles[a].getArea() * density) * collisionNormal.x * (1 - energyLoss));
+                        particles[a].velocity.y -= (impulse / (particles[a].getArea() * density) * collisionNormal.y * (1 - energyLoss));
+                        particles[b].velocity.x += (impulse / (particles[b].getArea() * density) * collisionNormal.x * (1 - energyLoss));
+                        particles[b].velocity.y += (impulse / (particles[b].getArea() * density) * collisionNormal.y * (1 - energyLoss));
+                    }
+                }
+            }
+        }
+
+        // Collision resolution with static lines
+        for (auto& particle : particles)
+        {
+            for (auto& staticLine : staticLines)
+            {
+                double overlap = staticLine.checkParticleCollision(particle);
+                if (overlap < particle.radius)
+                {
+                    // Get normal vector of static line
+                    vector2d normal = staticLine.getNormal();
+                    normal.normalize(1);
+
+                    // Adjust particle positions to resolve overlap
+                    particle.position.x += (particle.radius - overlap + overlapGap) * normal.x;
+                    particle.position.y += (particle.radius - overlap + overlapGap) * normal.y;
+
+                    // Calculate dot product of particle velocity and normal vector
+                    double dot = 2 * (particle.velocity.x * normal.x + particle.velocity.y * normal.y);
+
+                    // Reflect particle velocity based on collision normal and restitution factor
+                    particle.velocity.x -= dot * normal.x * (1 - energyLoss) * restitution;
+                    particle.velocity.y -= dot * normal.y * (1 - energyLoss) * restitution;
+                }
+            }
+        }
+    }
 }
+
+
+
+
 
 // Render the simulation
 void simulationContainer::render(aCamera *camera)

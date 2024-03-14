@@ -2,7 +2,9 @@
 
 #include <vector>
 #include <cstdio>
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
+
 
 #include "math.hpp"
 #include "aCamera.hpp"
@@ -10,6 +12,7 @@
 
 struct particle
 {
+	particle();
 	particle(vector2d nPosition, double nRadius);
 	void render(aCamera *camera);
 	void renderVector(aCamera *camera);
@@ -37,10 +40,12 @@ struct staticLine
 	void renderNormal(aCamera *camera);
 	vector2d getNormal();
 
-	double checkParticleCollision(particle target);
+	double checkParticleCollision(const particle& target);
 	staticPoint* a;
 	staticPoint* b;
 };
+
+
 
 class simulationContainer
 {
@@ -71,6 +76,8 @@ class simulationContainer
 		double density;
 		double restitution;
 		double energyLoss;
+		double friction;
+		double overlapGap;
 
 		int iterationSteps;
 };
