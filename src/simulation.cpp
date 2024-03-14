@@ -109,7 +109,7 @@ simulationContainer::simulationContainer()
 
 	running = false;
 	isPlacingParticle = false;
-	iterationSteps = 16;
+	iterationSteps = 4;
 }
 
 
@@ -146,6 +146,7 @@ void simulationContainer::update()
             {
                 if (a != b)
                 {
+                	printf("%i, %i \n", a, b);
                     // Calculate particle radii sum and overlap distance
                     double radiiSum = particles[a].radius + particles[b].radius;
                     double overlapDistance = radiiSum - particles[a].position.distance(particles[b].position);
@@ -181,8 +182,9 @@ void simulationContainer::update()
                         particles[b].velocity.y += (impulse / (particles[b].getArea() * density) * collisionNormal.y * (1 - energyLoss));
                     }
                 }
-            }
+            }       
         }
+        printf("\n");
 
         // Collision resolution with static lines
         for (auto& particle : particles)

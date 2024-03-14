@@ -144,7 +144,7 @@ int main(int argc, char* args[])
 		{
 			int x, y;
 			SDL_GetMouseState(&x, &y);	
-			container -> addParticle(mainCamera.screenToWorld(vector2d(x, y)), .5);
+			container -> addParticle(mainCamera.screenToWorld(vector2d(x, y)), .25);
 			
 		}
 
@@ -165,7 +165,7 @@ int main(int argc, char* args[])
 		container -> render(&mainCamera);
 
 		mainMenu -> updateTabs();
-		mainMenu -> render(&mainCamera);
+		//mainMenu -> render(&mainCamera);
 
 		mainWindow.display();
 

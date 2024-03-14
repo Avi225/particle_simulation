@@ -9,6 +9,33 @@
 #include "math.hpp"
 #include "aCamera.hpp"
 
+struct quadTreeBox
+{
+	quadTreeBox();
+	quadTreeBox(vector2d center, double halfDimension);
+
+	vector2d center;
+	double halfDimension;
+};
+
+class quadTree
+{
+public:
+	quadTree(quadTreeBox nBoundary, int nCapacity);
+	
+
+private:
+	const int capacity;
+	int *particles;
+
+	quadTreeBox boundary;
+	quadTree* nw;
+	quadTree* ne;
+	quadTree* sw;
+	quadTree* se;
+
+};
+
 
 struct particle
 {
@@ -45,8 +72,6 @@ struct staticLine
 	staticPoint* b;
 };
 
-
-
 class simulationContainer
 {
 	public:
@@ -69,6 +94,7 @@ class simulationContainer
 		bool isPlacingParticle;
 		vector2d placeParticlePosition;
 		bool running;
+
 		std::vector<particle> particles;
 		std::vector<staticPoint> staticPoints;
 		std::vector<staticLine> staticLines;
