@@ -34,6 +34,8 @@ int main(int argc, char* args[])
 	menu* mainMenu = generateMenu();
 	grid mainGrid(vector2d(0, 0), 101, 101, 5, 5);
 
+	
+
 	// Initialize SDL_Event for handling events
 	SDL_Event event;
 
@@ -162,6 +164,8 @@ int main(int argc, char* args[])
 		mainGrid.render(&mainCamera);
 
 		container -> update();
+		container -> renderQuadTree(&mainCamera);
+
 		container -> render(&mainCamera);
 
 		mainMenu -> updateTabs();

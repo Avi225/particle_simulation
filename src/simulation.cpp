@@ -1,5 +1,86 @@
 #include "simulation.hpp"
 
+quadTreeBox::quadTreeBox()
+{}
+
+quadTreeBox::quadTreeBox(vector2d nCenter, double nHalfDimension)
+:center(nCenter), halfDimension(nHalfDimension)
+{}
+
+quadTree::quadTree(quadTreeBox nBoundary, int nCapacity)
+:boundary(nBoundary), capacity(nCapacity)
+{
+	particles = new int(capacity);
+}
+
+void quadTree::split()
+{
+	quadTreeBox nBoundary;
+	nBoundary.halfDimension = boundary.halfDimension / 2;
+
+	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
+	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
+	nw = new quadTree(nBoundary, capacity);
+
+	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
+	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
+	ne = new quadTree(nBoundary, capacity);
+
+	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
+	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
+	sw = new quadTree(nBoundary, capacity);
+
+	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
+	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
+	se = new quadTree(nBoundary, capacity);
+}
+
+void quadTree::render(aCamera* camera)
+{
+	SDL_Color color = {0, 0, 255, 255};
+
+	vector2d a = {boundary.center.x - boundary.halfDimension,
+				  	boundary.center.y - boundary.halfDimension};
+
+	vector2d b = {boundary.center.x - boundary.halfDimension,
+				  	boundary.center.y + boundary.halfDimension};
+
+	camera -> renderLine(a, b, 0.1, color, false);
+
+	a = {boundary.center.x + boundary.halfDimension,
+		boundary.center.y + boundary.halfDimension};
+
+	b = {boundary.center.x + boundary.halfDimension,
+		boundary.center.y - boundary.halfDimension};
+
+	camera -> renderLine(a, b, 0.1, color, false);
+
+	a = {boundary.center.x - boundary.halfDimension,
+		boundary.center.y - boundary.halfDimension};
+
+	b = {boundary.center.x + boundary.halfDimension,
+		boundary.center.y - boundary.halfDimension};
+
+	camera -> renderLine(a, b, 0.1, color, false);
+
+	a = {boundary.center.x - boundary.halfDimension,
+		boundary.center.y + boundary.halfDimension};
+
+	b = {boundary.center.x + boundary.halfDimension,
+		boundary.center.y + boundary.halfDimension};
+
+	camera -> renderLine(a, b, 0.1, color, false);
+
+	if(nw != NULL)
+	{
+		nw -> render(camera);
+		ne -> render(camera);
+		sw -> render(camera);
+		se -> render(camera);
+	}
+}
+
+
 // Particle class constructor
 
 particle::particle()
@@ -108,6 +189,12 @@ simulationContainer::simulationContainer()
     overlapGap = 0.01;
 
 	running = false;
+
+	quadrantCapacity = 9;
+
+	nodeQuadTree = new quadTree({vector2d(0, 0), 40}, quadrantCapacity);
+	nodeQuadTree -> split();
+
 	isPlacingParticle = false;
 	iterationSteps = 4;
 }
@@ -146,7 +233,7 @@ void simulationContainer::update()
             {
                 if (a != b)
                 {
-                	printf("%i, %i \n", a, b);
+                	//printf("%i, %i \n", a, b);
                     // Calculate particle radii sum and overlap distance
                     double radiiSum = particles[a].radius + particles[b].radius;
                     double overlapDistance = radiiSum - particles[a].position.distance(particles[b].position);
@@ -184,7 +271,7 @@ void simulationContainer::update()
                 }
             }       
         }
-        printf("\n");
+        //printf("\n");
 
         // Collision resolution with static lines
         for (auto& particle : particles)
@@ -243,8 +330,13 @@ void simulationContainer::render(aCamera *camera)
 		staticLines[i].render(camera);
 		staticLines[i].renderNormal(camera);
 	}
-
 }
+
+void simulationContainer::renderQuadTree(aCamera *camera)
+{
+	nodeQuadTree -> render(camera);
+}
+
 
 // Start placing and place a particle at a specified position with velocity vector pointing towards the mouse release location
 void simulationContainer::placeParticle(vector2d position, double radius, bool state)

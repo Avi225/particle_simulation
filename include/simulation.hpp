@@ -22,13 +22,16 @@ class quadTree
 {
 public:
 	quadTree(quadTreeBox nBoundary, int nCapacity);
-	
 
+	void split();
+	void render(aCamera* camera);
+
+	
 private:
+	quadTreeBox boundary;
 	const int capacity;
 	int *particles;
 
-	quadTreeBox boundary;
 	quadTree* nw;
 	quadTree* ne;
 	quadTree* sw;
@@ -79,6 +82,7 @@ class simulationContainer
 
 		void update();
 		void render(aCamera *camera);
+		void renderQuadTree(aCamera *camera);
 		void placeParticle(vector2d position, double radius, bool state);
 		
 		void addStaticPoint(vector2d position);
@@ -93,11 +97,16 @@ class simulationContainer
 	private:
 		bool isPlacingParticle;
 		vector2d placeParticlePosition;
+
 		bool running;
+
+		int quadrantCapacity;
 
 		std::vector<particle> particles;
 		std::vector<staticPoint> staticPoints;
 		std::vector<staticLine> staticLines;
+
+		quadTree* nodeQuadTree;
 
 		double density;
 		double restitution;
