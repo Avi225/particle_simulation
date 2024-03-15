@@ -20,19 +20,22 @@ void quadTree::split()
 
 	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
 	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
-	nw = new quadTree(nBoundary, capacity);
+	nw = new quadTree(nBoundary, 0);
 
 	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
 	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
-	ne = new quadTree(nBoundary, capacity);
+	ne = new quadTree(nBoundary, 0);
 
 	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
 	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
-	sw = new quadTree(nBoundary, capacity);
+	sw = new quadTree(nBoundary, capacity-1);
 
 	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
 	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
-	se = new quadTree(nBoundary, capacity);
+	se = new quadTree(nBoundary, 0);
+
+	if(capacity > 0)
+		sw -> split();
 }
 
 void quadTree::render(aCamera* camera)
@@ -45,7 +48,7 @@ void quadTree::render(aCamera* camera)
 	vector2d b = {boundary.center.x - boundary.halfDimension,
 				  	boundary.center.y + boundary.halfDimension};
 
-	camera -> renderLine(a, b, 0.1, color, false);
+	camera -> renderLine(a, b, 0.3, color, false);
 
 	a = {boundary.center.x + boundary.halfDimension,
 		boundary.center.y + boundary.halfDimension};
@@ -53,7 +56,7 @@ void quadTree::render(aCamera* camera)
 	b = {boundary.center.x + boundary.halfDimension,
 		boundary.center.y - boundary.halfDimension};
 
-	camera -> renderLine(a, b, 0.1, color, false);
+	camera -> renderLine(a, b, 0.3, color, false);
 
 	a = {boundary.center.x - boundary.halfDimension,
 		boundary.center.y - boundary.halfDimension};
@@ -61,7 +64,7 @@ void quadTree::render(aCamera* camera)
 	b = {boundary.center.x + boundary.halfDimension,
 		boundary.center.y - boundary.halfDimension};
 
-	camera -> renderLine(a, b, 0.1, color, false);
+	camera -> renderLine(a, b, 0.3, color, false);
 
 	a = {boundary.center.x - boundary.halfDimension,
 		boundary.center.y + boundary.halfDimension};
@@ -69,7 +72,7 @@ void quadTree::render(aCamera* camera)
 	b = {boundary.center.x + boundary.halfDimension,
 		boundary.center.y + boundary.halfDimension};
 
-	camera -> renderLine(a, b, 0.1, color, false);
+	camera -> renderLine(a, b, 0.3, color, false);
 
 	if(nw != NULL)
 	{
@@ -190,13 +193,13 @@ simulationContainer::simulationContainer()
 
 	running = false;
 
-	quadrantCapacity = 9;
+	quadrantCapacity = 1;
 
-	nodeQuadTree = new quadTree({vector2d(0, 0), 40}, quadrantCapacity);
+	nodeQuadTree = new quadTree(quadTreeBox(vector2d(20, 20), 40), quadrantCapacity);
 	nodeQuadTree -> split();
 
 	isPlacingParticle = false;
-	iterationSteps = 4;
+	iterationSteps = 8;
 }
 
 
