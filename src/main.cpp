@@ -193,19 +193,15 @@ menu* generateMenu()
 	tab* test1 = new tab(vector2d(0, 41), "main");
 	tab* test2 = new tab(vector2d(0, 41), "settings");
 
-	test1 -> insertElement(new tabText("text", 1));
-	test1 -> insertElement(new tabText("not text, no?", 1));
+	test1 -> insertElement(new tabText("main", 1));
+	test1 -> insertElement(new tabText("text test", 1));
 	test1 -> insertElement(new tabSliderF(&abc, 0, 35));
 
-	test2 -> insertElement(new tabText("AAAAAAAA", 1));
-	test2 -> insertElement(new tabText("dolor", 1));
+	test2 -> insertElement(new tabText("setting", 1));
+	test2 -> insertElement(new tabText("text test", 1));
 	test2 -> insertElement(new tabSliderF(&abc, 0, 15));
-	test2 -> insertElement(new tabText("lorem", 1));
-	test2 -> insertElement(new tabText("ipsum", 1));
 
 	mainMenu -> insertTab(test1);
-	mainMenu -> insertTab(test2);
-	mainMenu -> insertTab(test2);
 	mainMenu -> insertTab(test2);
 	return(mainMenu);
 }
@@ -217,7 +213,7 @@ simulationContainer* generateSimulationContainer()
 	//  	for (int ii = 0; ii < 40; ++ii)
 	//  		container -> addParticle(vector2d(i*1.6-60, ii*1.6), 0.8);
 
-	container -> addStaticPoint(vector2d(-20, 0));
+	container -> addStaticPoint(vector2d(-40, 0));
 	container -> addStaticPoint(vector2d(-20, 20));
 	container -> addStaticPoint(vector2d(20, 20));
 	container -> addStaticPoint(vector2d(20, 0));
