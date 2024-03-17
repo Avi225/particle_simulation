@@ -1,9 +1,11 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
 #include <iostream>
 #include <vector>
 #include <cmath>
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_thread.h>
 
 #include "math.hpp"
 #include "aWindow.hpp"
@@ -12,9 +14,10 @@
 #include "simulation.hpp"
 #include "interface.hpp"
 
+
 double abc = 15;
 
-menu* generateMenu();
+menu* generateMenu(simulationContainer* container);
 simulationContainer* generateSimulationContainer();
 
 int main(int argc, char* args[])
@@ -31,8 +34,10 @@ int main(int argc, char* args[])
 	// Create simulation container and grid
 	
 	simulationContainer* container = generateSimulationContainer();
-	menu* mainMenu = generateMenu();
+	menu* mainMenu = generateMenu(container);
 	grid mainGrid(vector2d(0, 0), 101, 101, 5, 5);
+
+	
 
 	// Initialize SDL_Event for handling events
 	SDL_Event event;
@@ -42,7 +47,6 @@ int main(int argc, char* args[])
 	double currentTime = SDL_GetTicks() * 0.001f;
 
 	bool running = true;
-	bool ticker = false;
 	while (running)
 	{
 		int startTicks = SDL_GetTicks();
@@ -66,7 +70,7 @@ int main(int argc, char* args[])
 					{		
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 2.5, 0);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 50, 0);
 					}
 					break;
 				case SDL_MOUSEBUTTONUP:
@@ -75,7 +79,7 @@ int main(int argc, char* args[])
 					{
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 2.5, 1);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 50, 1);
 					}
 					break;
 				case SDL_KEYDOWN:
@@ -96,7 +100,7 @@ int main(int argc, char* args[])
 								break;
 							case SDLK_r:
 								// Advance the simulation by 1 tick
-								ticker = true;
+								container -> update();
 								break;
 						}
 				case SDL_WINDOWEVENT:
@@ -144,13 +148,9 @@ int main(int argc, char* args[])
 		{
 			int x, y;
 			SDL_GetMouseState(&x, &y);	
-			container -> addParticle(mainCamera.screenToWorld(vector2d(x, y)), .5);
-			
+				for (int i = 0; i < 100; ++i)
+					container -> addParticle(mainCamera.screenToWorld(vector2d(x+i, y+i)), 1);	
 		}
-
-		 // Advancing by 1 tick logic
-		if(ticker && container -> getRunning() == false)
-			container -> switchRunning();
 
 		mainWindow.clear();
 
@@ -160,19 +160,21 @@ int main(int argc, char* args[])
 
 		// Render
 		mainGrid.render(&mainCamera);
+		for (int i = 0; i < 100000; ++i)
+		{
+			int* a = new int(45);
+		}
 
-		container -> update();
+		if(container -> getRunning())
+			container -> update();
+
 		container -> render(&mainCamera);
+		container -> renderQuadTree(&mainCamera);
 
 		mainMenu -> updateTabs();
 		mainMenu -> render(&mainCamera);
 
 		mainWindow.display();
-
-		if(ticker)
-			container -> switchRunning();
-
-		ticker = false;
 
 		// Delay to maintain frame rate at monitor refresh rate
 		int frameTicks = SDL_GetTicks() - startTicks;
@@ -187,19 +189,13 @@ int main(int argc, char* args[])
 	return 0;
 }
 
-menu* generateMenu()
+menu* generateMenu(simulationContainer* container)
 {
 	menu* mainMenu = new menu(vector2d(16, 16));
 	tab* test1 = new tab(vector2d(0, 41), "main");
 	tab* test2 = new tab(vector2d(0, 41), "settings");
 
-	test1 -> insertElement(new tabText("main", 1));
-	test1 -> insertElement(new tabText("text test", 1));
-	test1 -> insertElement(new tabSliderF(&abc, 0, 35));
-
-	test2 -> insertElement(new tabText("setting", 1));
-	test2 -> insertElement(new tabText("text test", 1));
-	test2 -> insertElement(new tabSliderF(&abc, 0, 15));
+	test1 -> insertElement(new tabDisplayI(container -> getParticleCount(), 1));
 
 	mainMenu -> insertTab(test1);
 	mainMenu -> insertTab(test2);

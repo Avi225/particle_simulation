@@ -7,7 +7,7 @@ aCamera::aCamera(int nWidth, int nHeight, aWindow* nWindow)
 {
 	position = vector2d(0, 0);
 	zoom = 1;
-	zoomMin = 1;
+	zoomMin = 0;
 	zoomMax = 200;
 	zoomScale = 5;
 	positionSmoothness = 8;
@@ -29,7 +29,7 @@ void aCamera::moveCamera(vector2d movement)
 // Adjust the target zoom level
 void aCamera::zoomCamera(double nZoom)
 {
-	targetZoom += nZoom;
+	targetZoom += nZoom*targetZoom;
 	targetZoom = clamp(targetZoom, zoomMin, zoomMax);
 }
 
