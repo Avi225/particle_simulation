@@ -1,44 +1,36 @@
 #pragma once
 
-#include <vector>
-#include <cstdio>
 #include <iostream>
+#include <functional>
+#include <vector>
 #include <string>
+#include <thread>
+#include <mutex>
+#include <memory>
 
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_thread.h>
 
 #include "math.hpp"
 #include "aCamera.hpp"
 
-struct quadTreeBox
+struct MutexWrapper
 {
-	quadTreeBox();
-	quadTreeBox(vector2d center, double halfDimension);
+    std::unique_ptr<std::mutex> mutex_ptr;
 
-	vector2d center;
-	double halfDimension;
+    MutexWrapper() : mutex_ptr(std::make_unique<std::mutex>()) {}
+
+    MutexWrapper(MutexWrapper&& other) noexcept : mutex_ptr(std::move(other.mutex_ptr)) {}
+
+    MutexWrapper& operator=(MutexWrapper&& other) noexcept {
+        if (this != &other)
+        {
+            mutex_ptr = std::move(other.mutex_ptr);
+        }
+        return *this;
+    }
 };
-
-class quadTree
-{
-public:
-	quadTree(quadTreeBox nBoundary, int nCapacity);
-
-	void split();
-	void render(aCamera* camera);
-
-	
-private:
-	quadTreeBox boundary;
-	const int capacity;
-	int *particles;
-
-	quadTree* nw;
-	quadTree* ne;
-	quadTree* sw;
-	quadTree* se;
-
-};
-
 
 struct particle
 {
@@ -49,12 +41,40 @@ struct particle
 	bool checkCollision(particle b);
 	double getArea();
 
+	void lock();
+	void unlock();
+
+	particle(particle&& other) noexcept
+        : position(std::move(other.position)),
+          velocity(std::move(other.velocity)),
+          acceleration(std::move(other.acceleration)),
+          radius(other.radius),
+          mutex_(std::move(other.mutex_)) {}
+
+    particle& operator=(particle&& other) noexcept
+    {
+        if (this != &other)
+        {
+            position = std::move(other.position);
+            velocity = std::move(other.velocity);
+            acceleration = std::move(other.acceleration);
+            radius = other.radius;
+            // Move the mutex wrapper
+            mutex_ = std::move(other.mutex_);
+        }
+        return *this;
+    }
+
 	vector2d previousPosition;
 	vector2d position;
 	vector2d velocity;
 	vector2d acceleration;
 
 	double radius;
+
+	MutexWrapper mutex_;
+
+	bool updated;
 };
 
 struct staticPoint
@@ -75,6 +95,37 @@ struct staticLine
 	staticPoint* b;
 };
 
+struct quadTreeBox
+{
+	quadTreeBox();
+	quadTreeBox(vector2d center, double halfDimension);
+
+	vector2d center;
+	double halfDimension;
+};
+
+struct quadTree
+{
+
+	quadTree(quadTreeBox nBoundary, int nCapacity);
+
+	void split();
+	void render(aCamera* camera);
+	void insertParticle(particle* p);
+	void clear();
+	void getLeaves(std::vector<quadTree*>& quads);
+
+	quadTreeBox boundary;
+	const int capacity;
+	std::vector<particle*> particles;
+
+	quadTree* nw;
+	quadTree* ne;
+	quadTree* sw;
+	quadTree* se;
+
+};
+
 class simulationContainer
 {
 	public:
@@ -93,14 +144,19 @@ class simulationContainer
 
 		void addParticle(vector2d position, double radius);
 		particle* getParticle(int id);
+		int* getParticleCount();
 
 	private:
+		void worker(quadTree* q);
+
+
 		bool isPlacingParticle;
 		vector2d placeParticlePosition;
 
 		bool running;
 
 		int quadrantCapacity;
+		int particleCount;
 
 		std::vector<particle> particles;
 		std::vector<staticPoint> staticPoints;

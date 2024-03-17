@@ -157,6 +157,7 @@ void aWindow::renderTexture(SDL_Texture* texture, SDL_Rect destination, double a
 {
 	//SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 	SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
+	SDL_SetTextureAlphaMod(texture, color.a);
 	destination = {destination.x * resolutionMultiplier, destination.y * resolutionMultiplier, destination.w * resolutionMultiplier, destination.h * resolutionMultiplier};
 	SDL_RenderCopyEx(renderer, texture, NULL, &destination, -angle, NULL, SDL_FLIP_NONE);
 }

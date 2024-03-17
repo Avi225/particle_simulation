@@ -28,14 +28,23 @@ struct tabBreak : public tabElement
 	void render(aCamera* camera, vector2d position);
 };
 
-struct tabSliderF : public tabElement
+struct tabSliderD : public tabElement
 {
-	tabSliderF(double* nValue, double nMinValue, double nMaxValue);
+	tabSliderD(double* nValue, double nMinValue, double nMaxValue);
 	void render(aCamera* camera, vector2d position);
 
 	double* value;
 	double minValue;
 	double maxValue;
+};
+
+struct tabDisplayI : public tabElement
+{
+	tabDisplayI(int* nValue, int nSize);
+	void render(aCamera* camera, vector2d position);
+
+	int* value;
+	int size;
 };
 
 class tab

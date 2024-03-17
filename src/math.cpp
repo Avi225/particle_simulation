@@ -7,15 +7,13 @@ double mapRange(double value, double inMin, double inMax, double outMin, double 
 
 double aSquareRoot(const double x)  
 {
-  union
-  {
-    int i;
-    double x;
-  } u;
+    double x0 = x / 2.0; // Initial guess
 
-  u.x = x;
-  u.i = (1<<29) + (u.i >> 1) - (1<<22); 
-  return u.x;
+    for (int i = 0; i < 10; ++i) {
+        x0 = (x0 + x / x0) / 2.0; // Newton-Raphson iteration
+    }
+
+    return x0;;
 }
 
 double clamp(double x, double min, double max)
@@ -168,7 +166,12 @@ void vector2d::normalize(double target)
 
 double vector2d::distance(vector2d target)
 {
-	return (sqrt((x - target.x) * (x - target.x) + (y - target.y) * (y - target.y)));
+	return sqrt((x - target.x) * (x - target.x) + (y - target.y) * (y - target.y));
+}
+
+double vector2d::distanceSquared(vector2d target)
+{
+	return ((x - target.x) * (x - target.x) + (y - target.y) * (y - target.y));
 }
 
 double vector2d::dot(vector2d target)

@@ -1,89 +1,5 @@
 #include "simulation.hpp"
 
-quadTreeBox::quadTreeBox()
-{}
-
-quadTreeBox::quadTreeBox(vector2d nCenter, double nHalfDimension)
-:center(nCenter), halfDimension(nHalfDimension)
-{}
-
-quadTree::quadTree(quadTreeBox nBoundary, int nCapacity)
-:boundary(nBoundary), capacity(nCapacity)
-{
-	particles = new int(capacity);
-}
-
-void quadTree::split()
-{
-	quadTreeBox nBoundary;
-	nBoundary.halfDimension = boundary.halfDimension / 2;
-
-	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
-	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
-	nw = new quadTree(nBoundary, 0);
-
-	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
-	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
-	ne = new quadTree(nBoundary, 0);
-
-	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
-	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
-	sw = new quadTree(nBoundary, capacity-1);
-
-	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
-	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
-	se = new quadTree(nBoundary, 0);
-
-	if(capacity > 0)
-		sw -> split();
-}
-
-void quadTree::render(aCamera* camera)
-{
-	SDL_Color color = {0, 0, 255, 255};
-
-	vector2d a = {boundary.center.x - boundary.halfDimension,
-				  	boundary.center.y - boundary.halfDimension};
-
-	vector2d b = {boundary.center.x - boundary.halfDimension,
-				  	boundary.center.y + boundary.halfDimension};
-
-	camera -> renderLine(a, b, 0.3, color, false);
-
-	a = {boundary.center.x + boundary.halfDimension,
-		boundary.center.y + boundary.halfDimension};
-
-	b = {boundary.center.x + boundary.halfDimension,
-		boundary.center.y - boundary.halfDimension};
-
-	camera -> renderLine(a, b, 0.3, color, false);
-
-	a = {boundary.center.x - boundary.halfDimension,
-		boundary.center.y - boundary.halfDimension};
-
-	b = {boundary.center.x + boundary.halfDimension,
-		boundary.center.y - boundary.halfDimension};
-
-	camera -> renderLine(a, b, 0.3, color, false);
-
-	a = {boundary.center.x - boundary.halfDimension,
-		boundary.center.y + boundary.halfDimension};
-
-	b = {boundary.center.x + boundary.halfDimension,
-		boundary.center.y + boundary.halfDimension};
-
-	camera -> renderLine(a, b, 0.3, color, false);
-
-	if(nw != NULL)
-	{
-		nw -> render(camera);
-		ne -> render(camera);
-		sw -> render(camera);
-		se -> render(camera);
-	}
-}
-
-
 // Particle class constructor
 
 particle::particle()
@@ -91,6 +7,7 @@ particle::particle()
 {
 	velocity = {0, 0};
 	acceleration = {0, 0.01}; // Apply a small downards gravity force (TODO: move gravity application outside of the constructor)
+	updated = false;
 }
 
 
@@ -99,6 +16,7 @@ particle::particle(vector2d nPosition, double nRadius)
 {
 	velocity = {0, 0};
 	acceleration = {0, 0.01}; // Apply a small downards gravity force (TODO: move gravity application outside of the constructor)
+	updated = false;
 }
 
 // StaticPoint class constructor
@@ -182,6 +100,184 @@ double particle::getArea()
 	return(3.14159265359 * radius * radius);
 }
 
+void particle::lock()
+{
+	mutex_.mutex_ptr -> lock();
+}
+
+void particle::unlock()
+{
+	mutex_.mutex_ptr -> unlock();
+}
+
+quadTreeBox::quadTreeBox()
+{}
+
+quadTreeBox::quadTreeBox(vector2d nCenter, double nHalfDimension)
+:center(nCenter), halfDimension(nHalfDimension)
+{}
+
+quadTree::quadTree(quadTreeBox nBoundary, int nCapacity)
+:boundary(nBoundary), capacity(nCapacity)
+{
+	nw = nullptr;
+	ne = nullptr;
+	sw = nullptr;
+	se = nullptr;
+}
+
+void quadTree::split()
+{
+	if(int(particles.size()) <= capacity)
+		return;
+	if(boundary.halfDimension*2 <= 0.5)
+		return;
+
+	quadTreeBox nBoundary;
+	nBoundary.halfDimension = boundary.halfDimension / 2;
+
+	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
+	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
+	nw = new quadTree(nBoundary, capacity);
+
+	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
+	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
+	ne = new quadTree(nBoundary, capacity);
+
+	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
+	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
+	sw = new quadTree(nBoundary, capacity);
+
+	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
+	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
+	se = new quadTree(nBoundary, capacity);
+
+	for (auto& p : particles)
+	{
+		if(p -> position.x >= (boundary.center.x - p -> radius))
+		{
+			if(p -> position.y >= (boundary.center.y - p -> radius))
+				se -> insertParticle(p);
+
+			if(p -> position.y <= (boundary.center.y + p -> radius))
+				ne -> insertParticle(p);
+		}
+		if(p -> position.x <= (boundary.center.x + p -> radius))
+		{
+			if(p -> position.y >= (boundary.center.y - p -> radius))
+				sw -> insertParticle(p);
+
+			if(p -> position.y <= (boundary.center.y + p -> radius))
+				nw -> insertParticle(p);
+		}
+	}
+
+	particles.clear();
+	particles.shrink_to_fit();
+	
+	nw -> split();
+	ne -> split();
+	sw -> split();
+	se -> split();
+}
+
+void quadTree::render(aCamera* camera)
+{
+	SDL_Color color = {0, 128, 255, 86};
+
+	vector2d a = {boundary.center.x - boundary.halfDimension,
+				  	boundary.center.y - boundary.halfDimension};
+
+	vector2d b = {boundary.center.x - boundary.halfDimension,
+				  	boundary.center.y + boundary.halfDimension};
+	camera -> renderLine(a, b, 0.1, color, false);
+
+	a = {boundary.center.x + boundary.halfDimension,
+		boundary.center.y + boundary.halfDimension};
+
+	b = {boundary.center.x + boundary.halfDimension,
+		boundary.center.y - boundary.halfDimension};
+	camera -> renderLine(a, b, 0.1, color, false);
+
+
+	a = {boundary.center.x - boundary.halfDimension,
+		boundary.center.y - boundary.halfDimension};
+
+	b = {boundary.center.x + boundary.halfDimension,
+		boundary.center.y - boundary.halfDimension};
+	camera -> renderLine(a, b, 0.1, color, false);
+
+
+	a = {boundary.center.x - boundary.halfDimension,
+		boundary.center.y + boundary.halfDimension};
+
+	b = {boundary.center.x + boundary.halfDimension,
+		boundary.center.y + boundary.halfDimension};
+
+	camera -> renderLine(a, b, 0.1, color, false);
+
+
+	if(nw != nullptr)
+	{
+		nw -> render(camera);
+		ne -> render(camera);
+		sw -> render(camera);
+		se -> render(camera);
+	}
+	
+}
+
+void quadTree::insertParticle(particle* p)
+{
+	particles.push_back(p);
+}
+
+void quadTree::clear()
+{
+	if (nw)
+	{
+        nw->clear();
+        delete nw;
+        nw = nullptr;
+    }
+
+    if (ne)
+    {
+        ne->clear();
+        delete ne;
+        ne = nullptr;
+    }
+
+    if (sw)
+    {
+        sw->clear();
+        delete sw;
+        sw = nullptr;
+    }
+
+    if (se)
+    {
+        se->clear();
+        delete se;
+        se = nullptr;
+    }
+}
+
+void quadTree::getLeaves(std::vector<quadTree*>& quads)
+{
+	if(nw == nullptr)
+	{
+		quads.push_back(this);
+	}
+	else
+	{
+		nw -> getLeaves(quads);
+		ne -> getLeaves(quads);
+		sw -> getLeaves(quads);
+		se -> getLeaves(quads);
+	}
+}
+
 // Constructor for the simulation container
 simulationContainer::simulationContainer()
 {
@@ -193,120 +289,44 @@ simulationContainer::simulationContainer()
 
 	running = false;
 
-	quadrantCapacity = 1;
+	quadrantCapacity = 128;
 
-	nodeQuadTree = new quadTree(quadTreeBox(vector2d(20, 20), 40), quadrantCapacity);
-	nodeQuadTree -> split();
+	nodeQuadTree = new quadTree({vector2d(0, 0), 262144}, quadrantCapacity);
 
 	isPlacingParticle = false;
-	iterationSteps = 8;
+	iterationSteps = 16;
 }
 
 
 void simulationContainer::update()
 {
-    if (!running)
-        return;
+    particleCount = int(particles.size());
 
-    for (auto& particle : particles)
+    nodeQuadTree -> clear();
+    nodeQuadTree = new quadTree({vector2d(0, 0), 262144}, quadrantCapacity);
+
+    for (auto& p : particles)
     {
-        // Calculate friction forces
-        double frictionX = (particle.velocity.x > 0) ? -friction : friction;
-        double frictionY = (particle.velocity.y > 0) ? -friction : friction;
-
-        // Update particle velocities with accelerations
-        particle.velocity.x += particle.acceleration.x;
-        particle.velocity.y += particle.acceleration.y;
-
-        // Update particle positions based on velocities
-        particle.position.x += particle.velocity.x;
-        particle.position.y += particle.velocity.y;
-
-        // Apply friction-like force
-        particle.velocity.x += frictionX;
-        particle.velocity.y += frictionY;
+    	nodeQuadTree -> insertParticle(&p);
+    	p.updated = false;
     }
 
-    for (int ii = 0; ii < iterationSteps; ++ii)
+    nodeQuadTree -> split();
+
+    std::vector<quadTree*> quads;
+    nodeQuadTree -> getLeaves(quads);
+
+    std::vector<std::thread> workers;
+
+    for (auto& q : quads)
     {
-        // Collision resolution for particles
-        for (size_t a = 0; a < particles.size(); ++a)
-        {
-            for (size_t b = a + 1; b < particles.size(); ++b)
-            {
-                if (a != b)
-                {
-                	//printf("%i, %i \n", a, b);
-                    // Calculate particle radii sum and overlap distance
-                    double radiiSum = particles[a].radius + particles[b].radius;
-                    double overlapDistance = radiiSum - particles[a].position.distance(particles[b].position);
-
-                    if (overlapDistance >= 0)
-                    {
-                        // Calculate overlap direction vector
-                        vector2d overlap = particles[a].position.getVector(particles[b].position);
-                        overlap.normalize(overlapDistance);
-
-                        // Adjust particle positions to resolve overlap
-                        particles[a].position.x += overlap.x / 2;
-                        particles[a].position.y += overlap.y / 2;
-                        particles[b].position.x -= overlap.x / 2;
-                        particles[b].position.y -= overlap.y / 2;
-
-                        // Calculate collision normal direction
-                        vector2d collisionNormal = particles[a].position.getVector(particles[b].position);
-                        collisionNormal.normalize(1);
-
-                        // Calculate relative velocity along collision normal
-                        vector2d velocity = {particles[b].velocity.x - particles[a].velocity.x,
-                                             particles[b].velocity.y - particles[a].velocity.y};
-                        double relativeVelocity = velocity.dot(collisionNormal);
-
-                        // Calculate collision impulse for energy exchange
-                        double impulse = -((1 + restitution) * relativeVelocity) / (1 / (particles[a].getArea() * density) + 1 / (particles[b].getArea() * density));
-
-                        // Update velocities based on collision impulse
-                        particles[a].velocity.x -= (impulse / (particles[a].getArea() * density) * collisionNormal.x * (1 - energyLoss));
-                        particles[a].velocity.y -= (impulse / (particles[a].getArea() * density) * collisionNormal.y * (1 - energyLoss));
-                        particles[b].velocity.x += (impulse / (particles[b].getArea() * density) * collisionNormal.x * (1 - energyLoss));
-                        particles[b].velocity.y += (impulse / (particles[b].getArea() * density) * collisionNormal.y * (1 - energyLoss));
-                    }
-                }
-            }       
-        }
-        //printf("\n");
-
-        // Collision resolution with static lines
-        for (auto& particle : particles)
-        {
-            for (auto& staticLine : staticLines)
-            {
-                double overlap = staticLine.checkParticleCollision(particle);
-                if (overlap < particle.radius)
-                {
-                    // Get normal vector of static line
-                    vector2d normal = staticLine.getNormal();
-                    normal.normalize(1);
-
-                    // Adjust particle positions to resolve overlap
-                    particle.position.x += (particle.radius - overlap + overlapGap) * normal.x;
-                    particle.position.y += (particle.radius - overlap + overlapGap) * normal.y;
-
-                    // Calculate dot product of particle velocity and normal vector
-                    double dot = 2 * (particle.velocity.x * normal.x + particle.velocity.y * normal.y);
-
-                    // Reflect particle velocity based on collision normal and restitution factor
-                    particle.velocity.x -= dot * normal.x * (1 - energyLoss) * restitution;
-                    particle.velocity.y -= dot * normal.y * (1 - energyLoss) * restitution;
-                }
-            }
-        }
+    	workers.push_back(std::thread(&simulationContainer::worker, this, q));
+    }
+    for (auto& w : workers)
+    {
+    	w.join();
     }
 }
-
-
-
-
 
 // Render the simulation
 void simulationContainer::render(aCamera *camera)
@@ -325,7 +345,7 @@ void simulationContainer::render(aCamera *camera)
 	for(int i = 0; i < int(particles.size()); i++)
 	{
 		particles[i].render(camera);
-		particles[i].renderVector(camera);
+		//particles[i].renderVector(camera);
 	}
 
 	for(int i = 0; i < int(staticLines.size()); i++)
@@ -337,7 +357,8 @@ void simulationContainer::render(aCamera *camera)
 
 void simulationContainer::renderQuadTree(aCamera *camera)
 {
-	nodeQuadTree -> render(camera);
+	if(nodeQuadTree != nullptr)
+		nodeQuadTree -> render(camera);
 }
 
 
@@ -392,3 +413,120 @@ particle* simulationContainer::getParticle(int id)
 {
 	return &particles[id];
 }
+
+int* simulationContainer::getParticleCount()
+{
+	return &particleCount;
+}
+
+void simulationContainer::worker(quadTree* q)
+{
+	
+	for (auto& p : q -> particles)
+    {
+    	if(p -> updated)
+    		continue;
+    	p -> lock();
+        // Calculate friction forces
+        double frictionX = (p -> velocity.x > 0) ? -friction : friction;
+        double frictionY = (p -> velocity.y > 0) ? -friction : friction;
+
+        // Update p velocities with accelerations
+        p -> velocity.x += p -> acceleration.x;
+        p -> velocity.y += p -> acceleration.y;
+
+        // Update particle positions based on velocities
+        p -> position.x += p -> velocity.x;
+        p -> position.y += p -> velocity.y;
+
+        // Apply friction-like force
+        p -> velocity.x += frictionX;
+        p -> velocity.y += frictionY;
+    }
+    for (int ii = 0; ii < iterationSteps; ++ii)
+    {
+        // Collision resolution for particles
+        for (auto& a : q -> particles)
+        {
+            for (auto& b : q -> particles)
+            {
+                if (a != b)
+                {
+                	//printf("%i, %i \n", a, b);
+                    // Calculate particle radii sum and overlap distance
+                    double radiiSum = a -> radius + b -> radius;
+                    if((radiiSum*radiiSum) >= a -> position.distanceSquared(b -> position))
+                    {
+                    	//printf("checked");
+                    	double overlapDistance = radiiSum - a -> position.distance(b -> position);
+                        // Calculate overlap direction vector
+                        vector2d overlap = a -> position.getVector(b -> position);
+                        overlap.normalize(overlapDistance);
+
+                        // Adjust particle positions to resolve overlap
+
+                        double t = a -> getArea() + b -> getArea();
+                        double fa = a -> getArea() / t;
+                        double fb = b -> getArea() / t;
+
+                		//printf("%f, %f \n", fa, fb);
+
+
+                        a -> position.x += overlap.x * fb;
+                        a -> position.y += overlap.y * fb;
+                        b -> position.x -= overlap.x * fa;
+                        b -> position.y -= overlap.y * fa;
+
+                        // Calculate collision normal direction
+                        vector2d collisionNormal = a -> position.getVector(b -> position);
+                        collisionNormal.normalize(1);
+
+                        // Calculate relative velocity along collision normal
+                        vector2d velocity = {b -> velocity.x - a -> velocity.x,
+                                             b -> velocity.y - a -> velocity.y};
+                        double relativeVelocity = velocity.dot(collisionNormal);
+
+                        // Calculate collision impulse for energy exchange
+                        double impulse = -((1 + restitution) * relativeVelocity) / (1 / (a -> getArea() * density) + 1 / (b -> getArea() * density));
+
+                        // Update velocities based on collision impulse
+                        a -> velocity.x -= (impulse / (a -> getArea() * density) * collisionNormal.x * (1 - energyLoss));
+                        a -> velocity.y -= (impulse / (a -> getArea() * density) * collisionNormal.y * (1 - energyLoss));
+                        b -> velocity.x += (impulse / (b -> getArea() * density) * collisionNormal.x * (1 - energyLoss));
+                        b -> velocity.y += (impulse / (b -> getArea() * density) * collisionNormal.y * (1 - energyLoss));
+                    }
+                }
+            }       
+        }
+        //printf("\n");
+
+        // Collision resolution with static lines
+        for (auto& p : q -> particles)
+        {
+            for (auto& staticLine : staticLines)
+            {
+                double overlap = staticLine.checkParticleCollision(*p);
+                if (overlap < p -> radius)
+                {
+                    // Get normal vector of static line
+                    vector2d normal = staticLine.getNormal();
+                    normal.normalize(1);
+
+                    // Adjust particle positions to resolve overlap
+                    p -> position.x += (p -> radius - overlap + overlapGap) * normal.x;
+                    p -> position.y += (p -> radius - overlap + overlapGap) * normal.y;
+
+                    // Calculate dot product of particle velocity and normal vector
+                    double dot = 2 * (p -> velocity.x * normal.x + p -> velocity.y * normal.y);
+
+                    // Reflect particle velocity based on collision normal and restitution factor
+                    p -> velocity.x -= dot * normal.x * (1 - energyLoss) * restitution;
+                    p -> velocity.y -= dot * normal.y * (1 - energyLoss) * restitution;
+                }
+            }
+            p -> updated = true;
+            p -> unlock();
+        }
+    }
+}
+

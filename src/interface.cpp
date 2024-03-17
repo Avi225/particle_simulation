@@ -22,20 +22,33 @@ tabBreak::tabBreak()
 void tabBreak::render(aCamera* camera, vector2d position)
 {}
 
-tabSliderF::tabSliderF(double* nValue, double nMinValue, double nMaxValue)
+tabSliderD::tabSliderD(double* nValue, double nMinValue, double nMaxValue)
 : value(nValue), minValue(nMinValue), maxValue(nMaxValue)
 {
 	height = 22;
 	adjustment = {0, 11};
 }
 
-void tabSliderF::render(aCamera* camera, vector2d position)
+void tabSliderD::render(aCamera* camera, vector2d position)
 {
 	SDL_Color color = {255, 255, 255, 255};
 	camera -> renderLine(position, vector2d(position.x+150, position.y), 2, color, true);
 	vector2d pointPosition = position;
 	pointPosition.x += mapRange(*value, minValue, maxValue, 0, 150);
 	camera -> renderDisc(pointPosition, 5, color, true);
+}
+
+tabDisplayI::tabDisplayI(int* nValue, int nSize)
+:value(nValue), size(nSize)
+{
+	height = 22*size;
+	adjustment = {0, 0};
+}
+
+void tabDisplayI::render(aCamera* camera, vector2d position)
+{
+	SDL_Color color = {255, 255, 255, 255};
+	camera -> renderText(position, size, std::to_string(*value), color, 1);
 }
 
 tab::tab(vector2d nPosition, std::string nName)

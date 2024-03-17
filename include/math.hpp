@@ -47,6 +47,8 @@ struct vector2d
 
 	double distance(vector2d target);
 
+	double distanceSquared(vector2d target);
+
 	double dot(vector2d target);
 
 	void rotate(double degrees);
