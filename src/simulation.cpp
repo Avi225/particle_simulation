@@ -294,7 +294,7 @@ simulationContainer::simulationContainer()
 	nodeQuadTree = new quadTree({vector2d(0, 0), 262144}, quadrantCapacity);
 
 	isPlacingParticle = false;
-	iterationSteps = 16;
+	iterationSteps = 64;
 }
 
 
