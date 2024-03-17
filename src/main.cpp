@@ -209,7 +209,7 @@ simulationContainer* generateSimulationContainer()
 	//  	for (int ii = 0; ii < 40; ++ii)
 	//  		container -> addParticle(vector2d(i*1.6-60, ii*1.6), 0.8);
 
-	container -> addStaticPoint(vector2d(-20, 0));
+	container -> addStaticPoint(vector2d(-40, 0));
 	container -> addStaticPoint(vector2d(-20, 20));
 	container -> addStaticPoint(vector2d(20, 20));
 	container -> addStaticPoint(vector2d(20, 0));
