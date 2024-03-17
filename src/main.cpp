@@ -160,11 +160,7 @@ int main(int argc, char* args[])
 
 		// Render
 		mainGrid.render(&mainCamera);
-		for (int i = 0; i < 100000; ++i)
-		{
-			int* a = new int(45);
-		}
-
+		
 		if(container -> getRunning())
 			container -> update();
 
