@@ -73,9 +73,13 @@ void particle::render(aCamera *camera)
 	camera -> renderDisc(position, radius, color, false);
 }
 
-// Render the velocity vector of the particle
-void particle::renderVector(aCamera *camera)
+// Render the debug overlay for the particle
+void particle::renderDebug(aCamera *camera)
 {
+	SDL_Color color = {255, 255, 0, 128};
+
+	camera -> renderDisc(position, radius, color, false);
+
 	vector2d nVelocity = 
 	{
 		position.x+velocity.x*10,
@@ -154,20 +158,20 @@ void quadTree::split()
 
 	for (auto& p : particles)
 	{
-		if(p -> position.x >= (boundary.center.x - p -> radius))
+		if(p -> position.x >= (boundary.center.x - p -> radius * 4))
 		{
-			if(p -> position.y >= (boundary.center.y - p -> radius))
+			if(p -> position.y >= (boundary.center.y - p -> radius * 4))
 				se -> insertParticle(p);
 
-			if(p -> position.y <= (boundary.center.y + p -> radius))
+			if(p -> position.y <= (boundary.center.y + p -> radius * 4))
 				ne -> insertParticle(p);
 		}
-		if(p -> position.x <= (boundary.center.x + p -> radius))
+		if(p -> position.x <= (boundary.center.x + p -> radius * 4))
 		{
-			if(p -> position.y >= (boundary.center.y - p -> radius))
+			if(p -> position.y >= (boundary.center.y - p -> radius * 4))
 				sw -> insertParticle(p);
 
-			if(p -> position.y <= (boundary.center.y + p -> radius))
+			if(p -> position.y <= (boundary.center.y + p -> radius * 4))
 				nw -> insertParticle(p);
 		}
 	}
@@ -181,50 +185,60 @@ void quadTree::split()
 	se -> split();
 }
 
-void quadTree::render(aCamera* camera)
+void quadTree::render(aCamera* camera, vector2d mouse)
 {
-	SDL_Color color = {0, 128, 255, 86};
-
-	vector2d a = {boundary.center.x - boundary.halfDimension,
-				  	boundary.center.y - boundary.halfDimension};
-
-	vector2d b = {boundary.center.x - boundary.halfDimension,
-				  	boundary.center.y + boundary.halfDimension};
-	camera -> renderLine(a, b, 0.1, color, false);
-
-	a = {boundary.center.x + boundary.halfDimension,
-		boundary.center.y + boundary.halfDimension};
-
-	b = {boundary.center.x + boundary.halfDimension,
-		boundary.center.y - boundary.halfDimension};
-	camera -> renderLine(a, b, 0.1, color, false);
-
-
-	a = {boundary.center.x - boundary.halfDimension,
-		boundary.center.y - boundary.halfDimension};
-
-	b = {boundary.center.x + boundary.halfDimension,
-		boundary.center.y - boundary.halfDimension};
-	camera -> renderLine(a, b, 0.1, color, false);
-
-
-	a = {boundary.center.x - boundary.halfDimension,
-		boundary.center.y + boundary.halfDimension};
-
-	b = {boundary.center.x + boundary.halfDimension,
-		boundary.center.y + boundary.halfDimension};
-
-	camera -> renderLine(a, b, 0.1, color, false);
-
-
 	if(nw != nullptr)
 	{
-		nw -> render(camera);
-		ne -> render(camera);
-		sw -> render(camera);
-		se -> render(camera);
+		nw -> render(camera, mouse);
+		ne -> render(camera, mouse);
+		sw -> render(camera, mouse);
+		se -> render(camera, mouse);
+		return;
 	}
-	
+
+	vector2d pos = {boundary.center.x - boundary.halfDimension, boundary.center.y - boundary.halfDimension};
+	vector2d siz = {boundary.halfDimension * 2, boundary.halfDimension * 2};
+
+	SDL_Color color = {0, 128, 255, 16};
+
+	mouse = camera -> screenToWorld(mouse);
+
+	if(mouse.x < pos.x+siz.x && mouse.x > pos.x && mouse.y < pos.y+siz.y && mouse.y > pos.y && nw == nullptr)
+		color = {255, 0, 0, 64};
+
+	camera -> renderRect(pos, siz, color, false);
+
+
+	color.a += 64;
+
+	vector2d a = {boundary.center.x - boundary.halfDimension + 0.2,
+				  	boundary.center.y - boundary.halfDimension + 0.2};
+
+	vector2d b = {boundary.center.x - boundary.halfDimension + 0.2,
+				  	boundary.center.y + boundary.halfDimension - 0.2};
+	camera -> renderLine(a, b, 0.4, color, false);
+
+	a = {boundary.center.x + boundary.halfDimension - 0.2,
+		boundary.center.y + boundary.halfDimension - 0.2};
+
+	b = {boundary.center.x + boundary.halfDimension - 0.2,
+		boundary.center.y - boundary.halfDimension + 0.2};
+	camera -> renderLine(a, b, 0.4, color, false);
+
+	a = {boundary.center.x - boundary.halfDimension + 0.2,
+		boundary.center.y - boundary.halfDimension + 0.2};
+
+	b = {boundary.center.x + boundary.halfDimension - 0.2,
+		boundary.center.y - boundary.halfDimension + 0.2};
+	camera -> renderLine(a, b, 0.4, color, false);
+
+	a = {boundary.center.x + boundary.halfDimension - 0.2,
+		boundary.center.y + boundary.halfDimension - 0.2};
+
+	b = {boundary.center.x - boundary.halfDimension + 0.2,
+		boundary.center.y + boundary.halfDimension - 0.2};
+	camera -> renderLine(a, b, 0.4, color, false);
+
 }
 
 void quadTree::insertParticle(particle* p)
@@ -287,28 +301,59 @@ simulationContainer::simulationContainer()
 	friction = 0.001;
     overlapGap = 0.01;
 
-	running = false;
+	running = true;
 
-	quadrantCapacity = 128;
+	quadrantCapacity = 192;
 
-	nodeQuadTree = new quadTree({vector2d(0, 0), 262144}, quadrantCapacity);
+
+	nodeHalfDimension = 5000;
+	nodeQuadTree = new quadTree({vector2d(0, 0), nodeHalfDimension}, quadrantCapacity);
+
 
 	isPlacingParticle = false;
-	iterationSteps = 64;
+	iterationSteps = 32;
 }
 
 
 void simulationContainer::update()
 {
-    particleCount = int(particles.size());
 
-    nodeQuadTree -> clear();
-    nodeQuadTree = new quadTree({vector2d(0, 0), 262144}, quadrantCapacity);
+	selectedQuadTree = nullptr;
+
+    particleCount = int(particles.size());
 
     for (auto& p : particles)
     {
-    	nodeQuadTree -> insertParticle(&p);
-    	p.updated = false;
+        // Calculate friction forces
+        double frictionX = (p.velocity.x > 0) ? -friction : friction;
+        double frictionY = (p.velocity.y > 0) ? -friction : friction;
+
+        // Update p velocities with accelerations
+        p.velocity.x += p.acceleration.x;
+        p.velocity.y += p.acceleration.y;
+
+        // Update particle positions based on velocities
+        p.position.x += p.velocity.x;
+        p.position.y += p.velocity.y;
+
+        // Apply friction-like force
+        p.velocity.x += frictionX;
+        p.velocity.y += frictionY;
+    }
+
+    nodeQuadTree -> clear();
+    nodeQuadTree = new quadTree({vector2d(0, 0), nodeHalfDimension}, quadrantCapacity);
+
+    for (size_t i = 0; i < particles.size(); ++i)
+    {
+    	if(particles[i].position.x > nodeHalfDimension || particles[i].position.x < -nodeHalfDimension || particles[i].position.y > nodeHalfDimension || particles[i].position.y < -nodeHalfDimension)
+    	{
+    		particles.erase(particles.begin() + i);
+    		continue;
+    	}
+
+    	nodeQuadTree -> insertParticle(&particles[i]);
+    	particles[i].updated = false;
     }
 
     nodeQuadTree -> split();
@@ -320,6 +365,9 @@ void simulationContainer::update()
 
     for (auto& q : quads)
     {
+    	if(q -> particles.size() == 0)
+    		continue;
+    	//worker(q);
     	workers.push_back(std::thread(&simulationContainer::worker, this, q));
     }
     for (auto& w : workers)
@@ -342,23 +390,62 @@ void simulationContainer::render(aCamera *camera)
 	}
 
  	// Render particles and static lines with respectively velocity and normal vectors 
-	for(int i = 0; i < int(particles.size()); i++)
+	for (auto& p : particles)
 	{
-		particles[i].render(camera);
-		//particles[i].renderVector(camera);
+		//p.render(camera);
+		p.renderDebug(camera);
 	}
 
-	for(int i = 0; i < int(staticLines.size()); i++)
+	if(selectedQuadTree != nullptr)
 	{
-		staticLines[i].render(camera);
-		staticLines[i].renderNormal(camera);
+		for(auto& p : selectedQuadTree -> particles)
+		{
+			p -> renderDebug(camera);
+		}
+	}
+
+	for(auto& l : staticLines)
+	{
+		l.render(camera);
+		l.renderNormal(camera);
 	}
 }
 
-void simulationContainer::renderQuadTree(aCamera *camera)
+void simulationContainer::select(aCamera* camera)
 {
-	if(nodeQuadTree != nullptr)
-		nodeQuadTree -> render(camera);
+	//printf("%i\n", particles.size());
+	std::vector<quadTree*> quads;
+    nodeQuadTree -> getLeaves(quads);
+
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    vector2d mouse = {double(x), double(y)};
+    mouse = camera -> screenToWorld(mouse);
+
+    for(auto& q : quads)
+    {
+    	if
+    	(
+    		mouse.x < q -> boundary.center.x + q -> boundary.halfDimension &&
+    		mouse.x > q -> boundary.center.x - q -> boundary.halfDimension &&
+    		mouse.y < q -> boundary.center.y + q -> boundary.halfDimension &&
+    		mouse.y > q -> boundary.center.y - q -> boundary.halfDimension
+    	)
+    	{
+    		selectedQuadTree = q;
+    		break;
+    	}
+
+    }
+}
+
+void simulationContainer::renderQuadTree(aCamera *camera, vector2d mouse)
+{
+	if(nodeQuadTree == nullptr)
+		return;
+
+
+	nodeQuadTree -> render(camera, mouse);
 }
 
 
@@ -422,72 +509,62 @@ int* simulationContainer::getParticleCount()
 void simulationContainer::worker(quadTree* q)
 {
 	
-	for (auto& p : q -> particles)
-    {
-    	if(p -> updated)
-    		continue;
-    	p -> lock();
-        // Calculate friction forces
-        double frictionX = (p -> velocity.x > 0) ? -friction : friction;
-        double frictionY = (p -> velocity.y > 0) ? -friction : friction;
+	double radiiSum = 0;
+    double overlapDistance = 0;
+    vector2d overlap = {0, 0};
+    double totalArea = 0;
+    double factorA = 0;
+    double factorB = 0;
+    vector2d collisionNormal = {0, 0};
+    vector2d velocity = {0, 0};
+    double relativeVelocity = 0;
+    double impulse = 0;
 
-        // Update p velocities with accelerations
-        p -> velocity.x += p -> acceleration.x;
-        p -> velocity.y += p -> acceleration.y;
-
-        // Update particle positions based on velocities
-        p -> position.x += p -> velocity.x;
-        p -> position.y += p -> velocity.y;
-
-        // Apply friction-like force
-        p -> velocity.x += frictionX;
-        p -> velocity.y += frictionY;
-    }
     for (int ii = 0; ii < iterationSteps; ++ii)
     {
         // Collision resolution for particles
+        
         for (auto& a : q -> particles)
         {
+        	a -> lock();
+
             for (auto& b : q -> particles)
             {
+        		
+
                 if (a != b)
                 {
-                	//printf("%i, %i \n", a, b);
                     // Calculate particle radii sum and overlap distance
-                    double radiiSum = a -> radius + b -> radius;
+                    radiiSum = a -> radius + b -> radius;
                     if((radiiSum*radiiSum) >= a -> position.distanceSquared(b -> position))
                     {
-                    	//printf("checked");
-                    	double overlapDistance = radiiSum - a -> position.distance(b -> position);
+                    	overlapDistance = radiiSum - a -> position.distance(b -> position);
                         // Calculate overlap direction vector
-                        vector2d overlap = a -> position.getVector(b -> position);
+                        overlap = a -> position.getVector(b -> position);
                         overlap.normalize(overlapDistance);
 
                         // Adjust particle positions to resolve overlap
 
-                        double t = a -> getArea() + b -> getArea();
-                        double fa = a -> getArea() / t;
-                        double fb = b -> getArea() / t;
+                        totalArea = a -> getArea() + b -> getArea();
+                        factorA = a -> getArea() / totalArea;
+                       	factorB = b -> getArea() / totalArea;
 
-                		//printf("%f, %f \n", fa, fb);
-
-
-                        a -> position.x += overlap.x * fb;
-                        a -> position.y += overlap.y * fb;
-                        b -> position.x -= overlap.x * fa;
-                        b -> position.y -= overlap.y * fa;
+                        a -> position.x += overlap.x * factorB;
+                        a -> position.y += overlap.y * factorB;
+                        b -> position.x -= overlap.x * factorA;
+                        b -> position.y -= overlap.y * factorA;
 
                         // Calculate collision normal direction
-                        vector2d collisionNormal = a -> position.getVector(b -> position);
+                        collisionNormal = a -> position.getVector(b -> position);
                         collisionNormal.normalize(1);
 
                         // Calculate relative velocity along collision normal
-                        vector2d velocity = {b -> velocity.x - a -> velocity.x,
-                                             b -> velocity.y - a -> velocity.y};
-                        double relativeVelocity = velocity.dot(collisionNormal);
+                        velocity = {b -> velocity.x - a -> velocity.x,
+                                    b -> velocity.y - a -> velocity.y};
+                        relativeVelocity = velocity.dot(collisionNormal);
 
                         // Calculate collision impulse for energy exchange
-                        double impulse = -((1 + restitution) * relativeVelocity) / (1 / (a -> getArea() * density) + 1 / (b -> getArea() * density));
+                        impulse = -((1 + restitution) * relativeVelocity) / (1 / (a -> getArea() * density) + 1 / (b -> getArea() * density));
 
                         // Update velocities based on collision impulse
                         a -> velocity.x -= (impulse / (a -> getArea() * density) * collisionNormal.x * (1 - energyLoss));
@@ -496,13 +573,19 @@ void simulationContainer::worker(quadTree* q)
                         b -> velocity.y += (impulse / (b -> getArea() * density) * collisionNormal.y * (1 - energyLoss));
                     }
                 }
-            }       
-        }
-        //printf("\n");
 
-        // Collision resolution with static lines
+                
+            }
+
+            a -> unlock();
+
+        }
+
+        //Collision resolution with static lines
         for (auto& p : q -> particles)
         {
+        	p -> lock();
+
             for (auto& staticLine : staticLines)
             {
                 double overlap = staticLine.checkParticleCollision(*p);
@@ -524,7 +607,7 @@ void simulationContainer::worker(quadTree* q)
                     p -> velocity.y -= dot * normal.y * (1 - energyLoss) * restitution;
                 }
             }
-            p -> updated = true;
+
             p -> unlock();
         }
     }

@@ -140,18 +140,45 @@ void aCamera::renderDisc(vector2d discPosition, double radius, SDL_Color color, 
 // Render a colored rectangle on the screen
 void aCamera::renderRect(SDL_Rect rect, SDL_Color color, bool UI)
 {
-	if(UI)
-		window -> renderRect(rect, color);
-	else
+
+	if(!UI)
 	{
 		rect.x += position.x;
 		rect.y += position.y;
 
-		rect.x += width / 2;
-		rect.y += width / 2;
+		rect.x *= (zoomScale * zoom);
+		rect.y *= (zoomScale * zoom);
 
-		window -> renderRect(rect, color);
+		rect.x += width / 2;
+		rect.y += height / 2;
+
+		rect.w *= (zoomScale * zoom);
+		rect.h *= (zoomScale * zoom);
+
 	}
+	window -> renderRect(rect, color);
+}
+
+void aCamera::renderRect(vector2d position, vector2d size, SDL_Color color, bool UI)
+{
+
+	if(!UI)
+	{
+		worldToScreen(&position);
+
+		size.x *= (zoomScale * zoom);
+		size.y *= (zoomScale * zoom);
+	}
+	
+	SDL_Rect rect =
+	{
+		int(position.x),
+		int(position.y),
+		int(size.x),
+		int(size.y)
+	};
+
+	window -> renderRect(rect, color);
 }
 
 // Render text on the screen

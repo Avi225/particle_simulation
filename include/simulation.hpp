@@ -37,7 +37,7 @@ struct particle
 	particle();
 	particle(vector2d nPosition, double nRadius);
 	void render(aCamera *camera);
-	void renderVector(aCamera *camera);
+	void renderDebug(aCamera *camera);
 	bool checkCollision(particle b);
 	double getArea();
 
@@ -110,7 +110,7 @@ struct quadTree
 	quadTree(quadTreeBox nBoundary, int nCapacity);
 
 	void split();
-	void render(aCamera* camera);
+	void render(aCamera* camera, vector2d mouse);
 	void insertParticle(particle* p);
 	void clear();
 	void getLeaves(std::vector<quadTree*>& quads);
@@ -133,7 +133,8 @@ class simulationContainer
 
 		void update();
 		void render(aCamera *camera);
-		void renderQuadTree(aCamera *camera);
+		void select(aCamera* camera);
+		void renderQuadTree(aCamera *camera, vector2d mouse);
 		void placeParticle(vector2d position, double radius, bool state);
 		
 		void addStaticPoint(vector2d position);
@@ -149,7 +150,6 @@ class simulationContainer
 	private:
 		void worker(quadTree* q);
 
-
 		bool isPlacingParticle;
 		vector2d placeParticlePosition;
 
@@ -162,7 +162,9 @@ class simulationContainer
 		std::vector<staticPoint> staticPoints;
 		std::vector<staticLine> staticLines;
 
+		double nodeHalfDimension;
 		quadTree* nodeQuadTree;
+		quadTree* selectedQuadTree;
 
 		double density;
 		double restitution;

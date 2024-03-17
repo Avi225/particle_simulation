@@ -14,9 +14,6 @@
 #include "simulation.hpp"
 #include "interface.hpp"
 
-
-double abc = 15;
-
 menu* generateMenu(simulationContainer* container);
 simulationContainer* generateSimulationContainer();
 
@@ -26,6 +23,7 @@ int main(int argc, char* args[])
 	SDL_Init(SDL_INIT_VIDEO);
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();
+	// int s = 800;
 
 	// Create a main window and camera
 	aWindow mainWindow("particles", 1920/2, 1080/2);
@@ -37,6 +35,14 @@ int main(int argc, char* args[])
 	menu* mainMenu = generateMenu(container);
 	grid mainGrid(vector2d(0, 0), 101, 101, 5, 5);
 
+	// for (int x = -50; x < 50; ++x)
+	// {
+	// 	for (int y = -200; y < -150; ++y)
+	// 	{
+	// 		container -> addParticle(vector2d(x, y), 1);
+	// 	}
+	// }
+
 	
 
 	// Initialize SDL_Event for handling events
@@ -45,6 +51,10 @@ int main(int argc, char* args[])
 	const double timeStep = 0.01f;
 	double accumulator = 0.0f;
 	double currentTime = SDL_GetTicks() * 0.001f;
+	Uint32 fpsFrame;
+	float fps = 0;
+	float avgFps = 0;
+	int frames = 0;
 
 	bool running = true;
 	while (running)
@@ -54,8 +64,13 @@ int main(int argc, char* args[])
 		double frameTime = newTime - currentTime;
 		currentTime = newTime;
 		accumulator += frameTime;
+
+		int mouseX, mouseY;
+		SDL_GetMouseState(&mouseX, &mouseY);
+
 		while (accumulator > + timeStep)
 		{
+
 			// Event handling loop
 			while (SDL_PollEvent(&event))
 			{
@@ -64,23 +79,17 @@ int main(int argc, char* args[])
 				case SDL_QUIT:
 					running = false;
 					break;
+
 				case SDL_MOUSEBUTTONDOWN:
 					// Start placing a particle, this will be it's position
-					if (event.button.button == SDL_BUTTON_LEFT)
-					{		
-						int x, y;
-						SDL_GetMouseState(&x, &y);	
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 50, 0);
-					}
+					if (event.button.button == SDL_BUTTON_LEFT)				
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 5, 0);
 					break;
+
 				case SDL_MOUSEBUTTONUP:
 					// Finish placing a particle, it's velocity will be pointing towards this point
 					if (event.button.button == SDL_BUTTON_LEFT)
-					{
-						int x, y;
-						SDL_GetMouseState(&x, &y);	
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 50, 1);
-					}
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 5, 1);
 					break;
 				case SDL_KEYDOWN:
 						// Handle key presses
@@ -101,6 +110,9 @@ int main(int argc, char* args[])
 							case SDLK_r:
 								// Advance the simulation by 1 tick
 								container -> update();
+								break;
+							case SDLK_z:
+								container -> select(&mainCamera);
 								break;
 						}
 				case SDL_WINDOWEVENT:
@@ -146,10 +158,8 @@ int main(int argc, char* args[])
 		    mainCamera.zoomCamera(-0.1);
 		if(state[SDL_SCANCODE_F])
 		{
-			int x, y;
-			SDL_GetMouseState(&x, &y);	
-				for (int i = 0; i < 100; ++i)
-					container -> addParticle(mainCamera.screenToWorld(vector2d(x+i, y+i)), 1);	
+			for (int i = 0; i < 20; ++i)
+				container -> addParticle(mainCamera.screenToWorld(vector2d(mouseX+i, mouseY+i)), 1);	
 		}
 
 		mainWindow.clear();
@@ -165,7 +175,7 @@ int main(int argc, char* args[])
 			container -> update();
 
 		container -> render(&mainCamera);
-		container -> renderQuadTree(&mainCamera);
+		container -> renderQuadTree(&mainCamera, {double(mouseX), double(mouseY)});
 
 		mainMenu -> updateTabs();
 		mainMenu -> render(&mainCamera);
@@ -174,14 +184,24 @@ int main(int argc, char* args[])
 
 		// Delay to maintain frame rate at monitor refresh rate
 		int frameTicks = SDL_GetTicks() - startTicks;
-		if (frameTicks < 1000 / (mainWindow.getRefreshRate()))
-			SDL_Delay(1000 / (mainWindow.getRefreshRate()) - frameTicks);
+		if (frameTicks < 1000 / mainWindow.getRefreshRate())
+			SDL_Delay(1000 / mainWindow.getRefreshRate() - frameTicks);
+		fpsFrame = SDL_GetTicks() - startTicks;
+		fps = (fpsFrame > 0) ? 1000.0f / fpsFrame : 0.0f;
+		avgFps += fps;
+		frames++;
+
+		// s--;
+		// if(s <= 0)
+		// 	break;
 	}
 
 	// Cleanup and quit SDL, SDL_image, and SDL_ttf libraries
 	mainWindow.cleanUp();
 	TTF_Quit();
 	SDL_Quit();
+	// printf("%f fps average\n", avgFps/frames);
+	// system("pause");
 	return 0;
 }
 
