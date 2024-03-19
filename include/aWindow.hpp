@@ -38,6 +38,8 @@ public:
 
 	void renderTexture(SDL_Texture* texture, SDL_Rect destination, double angle, SDL_Color color);
 
+	void renderPixel(vector2d position, SDL_Color color);
+
 	void updateSize(int nWidth, int nHeight);
 
 private:

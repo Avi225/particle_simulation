@@ -118,6 +118,12 @@ void aCamera::renderDisc(vector2d discPosition, double radius, SDL_Color color, 
 	{
 		radius *= zoomScale * zoom;
 		worldToScreen(&discPosition);
+		if(radius < 0.5)
+		{
+			window -> renderPixel(discPosition, color);
+			return;
+		}
+
 		discPosition -= radius;
 
 		SDL_Rect rect = 

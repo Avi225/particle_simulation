@@ -344,8 +344,13 @@ void simulationContainer::render(aCamera *camera)
  	// Render particles and static lines with respectively velocity and normal vectors 
 	for(int i = 0; i < int(particles.size()); i++)
 	{
+<<<<<<< Updated upstream
 		particles[i].render(camera);
 		//particles[i].renderVector(camera);
+=======
+		p.render(camera);
+		//p.renderDebug(camera);
+>>>>>>> Stashed changes
 	}
 
 	for(int i = 0; i < int(staticLines.size()); i++)
@@ -450,11 +455,20 @@ void simulationContainer::worker(quadTree* q)
         {
             for (auto& b : q -> particles)
             {
+<<<<<<< Updated upstream
+=======
+        		
+>>>>>>> Stashed changes
                 if (a != b)
                 {
                 	//printf("%i, %i \n", a, b);
                     // Calculate particle radii sum and overlap distance
+<<<<<<< Updated upstream
                     double radiiSum = a -> radius + b -> radius;
+=======
+                    radiiSum = a -> radius + b -> radius;
+                    
+>>>>>>> Stashed changes
                     if((radiiSum*radiiSum) >= a -> position.distanceSquared(b -> position))
                     {
                     	//printf("checked");

@@ -66,21 +66,30 @@ int main(int argc, char* args[])
 					break;
 				case SDL_MOUSEBUTTONDOWN:
 					// Start placing a particle, this will be it's position
+<<<<<<< Updated upstream
 					if (event.button.button == SDL_BUTTON_LEFT)
 					{		
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
 						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 50, 0);
 					}
+=======
+					if (event.button.button == SDL_BUTTON_LEFT)				
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 20, 0);
+>>>>>>> Stashed changes
 					break;
 				case SDL_MOUSEBUTTONUP:
 					// Finish placing a particle, it's velocity will be pointing towards this point
 					if (event.button.button == SDL_BUTTON_LEFT)
+<<<<<<< Updated upstream
 					{
 						int x, y;
 						SDL_GetMouseState(&x, &y);	
 						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 50, 1);
 					}
+=======
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 20, 1);
+>>>>>>> Stashed changes
 					break;
 				case SDL_KEYDOWN:
 						// Handle key presses
@@ -159,12 +168,17 @@ int main(int argc, char* args[])
 		mainCamera.updatePosition();
 
 		// Render
+<<<<<<< Updated upstream
 		mainGrid.render(&mainCamera);
 		for (int i = 0; i < 100000; ++i)
 		{
 			int* a = new int(45);
 		}
 
+=======
+		//mainGrid.render(&mainCamera);
+		
+>>>>>>> Stashed changes
 		if(container -> getRunning())
 			container -> update();
 
@@ -209,10 +223,10 @@ simulationContainer* generateSimulationContainer()
 	//  	for (int ii = 0; ii < 40; ++ii)
 	//  		container -> addParticle(vector2d(i*1.6-60, ii*1.6), 0.8);
 
-	container -> addStaticPoint(vector2d(-40, 0));
-	container -> addStaticPoint(vector2d(-20, 20));
-	container -> addStaticPoint(vector2d(20, 20));
-	container -> addStaticPoint(vector2d(20, 0));
+	container -> addStaticPoint(vector2d(-100, 0));
+	container -> addStaticPoint(vector2d(-50, 50));
+	container -> addStaticPoint(vector2d(0, 50));
+	container -> addStaticPoint(vector2d(50, 0));
 	container -> addStaticPoint(vector2d(100, 0));
 
 	container -> addStaticLine(0, 1);
