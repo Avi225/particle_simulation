@@ -40,11 +40,22 @@ struct tabSliderD : public tabElement
 
 struct tabDisplayI : public tabElement
 {
-	tabDisplayI(int* nValue, int nSize);
+	tabDisplayI(int* nValue, int nSize, std::string nText);
 	void render(aCamera* camera, vector2d position);
 
 	int* value;
 	int size;
+	std::string text;
+};
+
+struct tabDisplayD : public tabElement
+{
+	tabDisplayD(double* nValue, int nSize, std::string nText);
+	void render(aCamera* camera, vector2d position);
+
+	double* value;
+	int size;
+	std::string text;
 };
 
 class tab

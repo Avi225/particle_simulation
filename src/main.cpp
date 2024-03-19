@@ -17,6 +17,9 @@
 menu* generateMenu(simulationContainer* container);
 simulationContainer* generateSimulationContainer();
 
+double fps = 0;
+
+
 int main(int argc, char* args[])
 {
 	// Initialize SDL, SDL_image, and SDL_ttf libraries
@@ -52,7 +55,6 @@ int main(int argc, char* args[])
 	double accumulator = 0.0f;
 	double currentTime = SDL_GetTicks() * 0.001f;
 	Uint32 fpsFrame;
-	float fps = 0;
 	float avgFps = 0;
 	int frames = 0;
 
@@ -132,7 +134,6 @@ int main(int argc, char* args[])
 						mainWindow.updateSize(w, h);
 						mainCamera.setSize(w, h);
 					}
-
 				}
 			}
 			accumulator = timeStep;
@@ -178,7 +179,7 @@ int main(int argc, char* args[])
 
 		// Render
 		
-		//mainGrid.render(&mainCamera);
+		mainGrid.render(&mainCamera);
     
 		if(container -> getRunning())
 			container -> update();
@@ -220,7 +221,8 @@ menu* generateMenu(simulationContainer* container)
 	tab* test1 = new tab(vector2d(0, 41), "main");
 	tab* test2 = new tab(vector2d(0, 41), "settings");
 
-	test1 -> insertElement(new tabDisplayI(container -> getParticleCount(), 1));
+	test1 -> insertElement(new tabDisplayI(container -> getParticleCount(), 1, "particles: "));
+	test1 -> insertElement(new tabDisplayD(&fps, 1, "fps: "));
 
 	mainMenu -> insertTab(test1);
 	mainMenu -> insertTab(test2);
@@ -235,15 +237,9 @@ simulationContainer* generateSimulationContainer()
 	//  		container -> addParticle(vector2d(i*1.6-60, ii*1.6), 0.8);
 
 	container -> addStaticPoint(vector2d(-100, 0));
-	container -> addStaticPoint(vector2d(-50, 50));
-	container -> addStaticPoint(vector2d(0, 50));
-	container -> addStaticPoint(vector2d(50, 0));
 	container -> addStaticPoint(vector2d(100, 0));
 
 	container -> addStaticLine(0, 1);
-	container -> addStaticLine(1, 2);
-	container -> addStaticLine(2, 3);
-	container -> addStaticLine(3, 4);
 
 	return(container);
 }

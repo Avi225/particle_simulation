@@ -38,8 +38,8 @@ void tabSliderD::render(aCamera* camera, vector2d position)
 	camera -> renderDisc(pointPosition, 5, color, true);
 }
 
-tabDisplayI::tabDisplayI(int* nValue, int nSize)
-:value(nValue), size(nSize)
+tabDisplayI::tabDisplayI(int* nValue, int nSize, std::string nText)
+:value(nValue), size(nSize), text(nText)
 {
 	height = 22*size;
 	adjustment = {0, 0};
@@ -48,8 +48,23 @@ tabDisplayI::tabDisplayI(int* nValue, int nSize)
 void tabDisplayI::render(aCamera* camera, vector2d position)
 {
 	SDL_Color color = {255, 255, 255, 255};
-	camera -> renderText(position, size, std::to_string(*value), color, 1);
+	camera -> renderText(position, size, text + std::to_string(*value), color, 1);
 }
+
+tabDisplayD::tabDisplayD(double* nValue, int nSize, std::string nText)
+:value(nValue), size(nSize), text(nText)
+{
+	height = 22*size;
+	adjustment = {0, 0};
+}
+
+void tabDisplayD::render(aCamera* camera, vector2d position)
+{
+	SDL_Color color = {255, 255, 255, 255};
+	camera -> renderText(position, size, text + std::to_string(*value), color, 1);
+}
+
+
 
 tab::tab(vector2d nPosition, std::string nName)
 : position(nPosition), name(nName)
@@ -162,14 +177,14 @@ void menu::render(aCamera* camera)
 			33
 		};
 
-		color = {255, 255, 255, 0};
+		color = {0, 0, 0, 0};
 		color.a = 128+48*(tabStates[i][0]+tabStates[i][1]);
 		if(tabStates[i][2])
 			color = {0, 0, 0, 223};
 
 		camera -> renderRect(rect, color, true);
 
-		color = {0, 0, 0, 255};
+		color = {255, 255, 255, 255};
 		if(tabStates[i][2])
 			color = {255, 255, 255, 255};
 
