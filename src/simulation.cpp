@@ -392,17 +392,17 @@ void simulationContainer::render(aCamera *camera)
  	// Render particles and static lines with respectively velocity and normal vectors 
 	for (auto& p : particles)
 	{
-		//p.render(camera);
-		p.renderDebug(camera);
+		p.render(camera);
+		//p.renderDebug(camera);
 	}
 
 	if(selectedQuadTree != nullptr)
-	{
+  {
 		for(auto& p : selectedQuadTree -> particles)
 		{
 			p -> renderDebug(camera);
-		}
-	}
+    }
+  }
 
 	for(auto& l : staticLines)
 	{
@@ -530,12 +530,12 @@ void simulationContainer::worker(quadTree* q)
 
             for (auto& b : q -> particles)
             {
-        		
-
                 if (a != b)
                 {
-                    // Calculate particle radii sum and overlap distance
+                    // Calculate particle radii sum
                     radiiSum = a -> radius + b -> radius;
+                    
+                    // Skip if particles are not touching
                     if((radiiSum*radiiSum) >= a -> position.distanceSquared(b -> position))
                     {
                     	overlapDistance = radiiSum - a -> position.distance(b -> position);
@@ -544,7 +544,6 @@ void simulationContainer::worker(quadTree* q)
                         overlap.normalize(overlapDistance);
 
                         // Adjust particle positions to resolve overlap
-
                         totalArea = a -> getArea() + b -> getArea();
                         factorA = a -> getArea() / totalArea;
                        	factorB = b -> getArea() / totalArea;

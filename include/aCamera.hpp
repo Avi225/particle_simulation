@@ -31,7 +31,6 @@ public:
 	void renderRect(SDL_Rect rect, SDL_Color color, bool UI);
 	void renderRect(vector2d position, vector2d size, SDL_Color color, bool UI);
 
-
 	void renderText(vector2d textPosition, int size, std::string text, SDL_Color color, bool UI);
 
 private:
