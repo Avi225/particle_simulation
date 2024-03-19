@@ -29,10 +29,7 @@ public:
 	void renderDisc(vector2d discPosition, double radius, SDL_Color color, bool UI);
 
 	void renderRect(SDL_Rect rect, SDL_Color color, bool UI);
-<<<<<<< Updated upstream
-=======
 	void renderRect(vector2d position, vector2d size, SDL_Color color, bool UI);
->>>>>>> Stashed changes
 
 	void renderText(vector2d textPosition, int size, std::string text, SDL_Color color, bool UI);
 
