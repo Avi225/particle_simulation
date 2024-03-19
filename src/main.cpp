@@ -168,17 +168,9 @@ int main(int argc, char* args[])
 		mainCamera.updatePosition();
 
 		// Render
-<<<<<<< Updated upstream
-		mainGrid.render(&mainCamera);
-		for (int i = 0; i < 100000; ++i)
-		{
-			int* a = new int(45);
-		}
-
-=======
-		//mainGrid.render(&mainCamera);
 		
->>>>>>> Stashed changes
+		//mainGrid.render(&mainCamera);
+
 		if(container -> getRunning())
 			container -> update();
 
