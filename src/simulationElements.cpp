@@ -5,7 +5,7 @@ particle::particle()
 : position({0, 0}), radius(1)
 {
 	velocity = {0, 0};
-	acceleration = {0, 0.01}; // Apply a small downwards gravity force
+	acceleration = {0, 0.1}; // Apply a small downwards gravity force
 	updated = false;
 }
 
@@ -14,7 +14,7 @@ particle::particle(vector2d nPosition, double nRadius)
 : position(nPosition), radius(nRadius)
 {
 	velocity = {0, 0};
-	acceleration = {0, 0.01}; // Apply a small downwards gravity force
+	acceleration = {0, 0.1}; // Apply a small downwards gravity force
 	updated = false;
 }
 
