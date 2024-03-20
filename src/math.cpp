@@ -152,7 +152,7 @@ vector2d vector2d::operator/(double const& a)
 
 void vector2d::print()
 {
-	std::cout << x << ", " << y << std::endl;
+	printf("%f, %f\n", x, y);
 }
 
 void vector2d::normalize(double target)
@@ -179,17 +179,14 @@ double vector2d::dot(vector2d target)
 	return x * target.x + y * target.y;
 }
 
-
 void vector2d::rotate(double degrees)
 {
-	double len = length();
-	double radians = degrees * (3.14159265358979323846 / 180);
+	double radians = degrees * 3.14159265358979323846 / 180.0;
+    double cosA = cos(radians);
+    double sinA = sin(radians);
 
-	double nx = cos(radians) * x - sin(radians) * y;
-	double ny = sin(radians) * x + cos(radians) * y;
-	x = nx;
-	y = ny;
-	normalize(len);
+    x = x * cosA - y * sinA;
+    y = x * sinA + y * cosA;
 }
 
 double vector2d::length()

@@ -1,614 +1,374 @@
 #include "simulation.hpp"
 
-// Particle class constructor
-
-particle::particle()
-: position({0, 0}), radius(1)
-{
-	velocity = {0, 0};
-	acceleration = {0, 0.01}; // Apply a small downards gravity force (TODO: move gravity application outside of the constructor)
-	updated = false;
-}
-
-
-particle::particle(vector2d nPosition, double nRadius)
-: position(nPosition), radius(nRadius)
-{
-	velocity = {0, 0};
-	acceleration = {0, 0.01}; // Apply a small downards gravity force (TODO: move gravity application outside of the constructor)
-	updated = false;
-}
-
-// StaticPoint class constructor
-staticPoint::staticPoint(vector2d nPosition)
-: position(nPosition)
-{}
-
-// StaticLine class constructor
-staticLine::staticLine(staticPoint* na, staticPoint* nb)
-:a(na), b(nb)
-{}
-
-// Render the static line
-void staticLine::render(aCamera *camera)
-{
-	camera -> renderLine(a->position, b->position, 0.01, {255, 255, 255, 255}, false);
-}
-
-// Render the normal vector of the static line
-void staticLine::renderNormal(aCamera *camera)
-{
-	vector2d normal = getNormal();
-	normal.normalize(1);
-	camera -> renderLine((a->position + b->position) / 2, (a->position + b->position) / 2 + normal, 0.1, {0, 0, 255, 255}, false);
-}
-
-// Get the normal vector of the static line
-vector2d staticLine::getNormal()
-{
-	vector2d normal = {(b->position.y - a->position.y), -(b->position.x - a->position.x)};
-	return(normal);
-}
-
-// Check if a particle collides with this static line
-double staticLine::checkParticleCollision(const particle& target)
-{
-	vector2d v = {target.position.x - a->position.x, target.position.y - a->position.y};
-	vector2d dir = {b->position.getVector(a->position)};
-	vector2d normal = getNormal();
-	double len = a->position.distance(b->position);
-	double pro = (v.x * dir.x + v.y * dir.y) / len;
-	if(pro >= 0 && pro <= len)
-	{
-		double dis = aAbs(v.x * normal.x + v.y * normal.y) / len;
-		return dis;
-	}
-	return target.radius+1;
-}
-
-// Render the particle
-void particle::render(aCamera *camera)
-{
-	SDL_Color color = {255, 255, 255, 255};
-	camera -> renderDisc(position, radius, color, false);
-}
-
-// Render the debug overlay for the particle
-void particle::renderDebug(aCamera *camera)
-{
-	SDL_Color color = {255, 255, 0, 128};
-
-	camera -> renderDisc(position, radius, color, false);
-
-	vector2d nVelocity = 
-	{
-		position.x+velocity.x*10,
-		position.y+velocity.y*10
-	};
-
-	camera -> renderLine(position, nVelocity, 0.1, {255, 0, 0, 255}, false);
-}
-
-// Check if two particles collide
-bool particle::checkCollision(particle b)
-{
-	if(position.distance(b.position) < (radius + b.radius))
-		return true;	
-	else
-		return false;
-}
-
-// Calculate the area of the particle
-double particle::getArea()
-{
-	return(3.14159265359 * radius * radius);
-}
-
-void particle::lock()
-{
-	mutex_.mutex_ptr -> lock();
-}
-
-void particle::unlock()
-{
-	mutex_.mutex_ptr -> unlock();
-}
-
-quadTreeBox::quadTreeBox()
-{}
-
-quadTreeBox::quadTreeBox(vector2d nCenter, double nHalfDimension)
-:center(nCenter), halfDimension(nHalfDimension)
-{}
-
-quadTree::quadTree(quadTreeBox nBoundary, int nCapacity)
-:boundary(nBoundary), capacity(nCapacity)
-{
-	nw = nullptr;
-	ne = nullptr;
-	sw = nullptr;
-	se = nullptr;
-}
-
-void quadTree::split()
-{
-	if(int(particles.size()) <= capacity)
-		return;
-	if(boundary.halfDimension*2 <= 0.5)
-		return;
-
-	quadTreeBox nBoundary;
-	nBoundary.halfDimension = boundary.halfDimension / 2;
-
-	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
-	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
-	nw = new quadTree(nBoundary, capacity);
-
-	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
-	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
-	ne = new quadTree(nBoundary, capacity);
-
-	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
-	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
-	sw = new quadTree(nBoundary, capacity);
-
-	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
-	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
-	se = new quadTree(nBoundary, capacity);
-
-	for (auto& p : particles)
-	{
-		if(p -> position.x >= (boundary.center.x - p -> radius * 4))
-		{
-			if(p -> position.y >= (boundary.center.y - p -> radius * 4))
-				se -> insertParticle(p);
-
-			if(p -> position.y <= (boundary.center.y + p -> radius * 4))
-				ne -> insertParticle(p);
-		}
-		if(p -> position.x <= (boundary.center.x + p -> radius * 4))
-		{
-			if(p -> position.y >= (boundary.center.y - p -> radius * 4))
-				sw -> insertParticle(p);
-
-			if(p -> position.y <= (boundary.center.y + p -> radius * 4))
-				nw -> insertParticle(p);
-		}
-	}
-
-	particles.clear();
-	particles.shrink_to_fit();
-	
-	nw -> split();
-	ne -> split();
-	sw -> split();
-	se -> split();
-}
-
-void quadTree::render(aCamera* camera, vector2d mouse)
-{
-	if(nw != nullptr)
-	{
-		nw -> render(camera, mouse);
-		ne -> render(camera, mouse);
-		sw -> render(camera, mouse);
-		se -> render(camera, mouse);
-		return;
-	}
-
-	vector2d pos = {boundary.center.x - boundary.halfDimension, boundary.center.y - boundary.halfDimension};
-	vector2d siz = {boundary.halfDimension * 2, boundary.halfDimension * 2};
-
-	SDL_Color color = {0, 128, 255, 16};
-
-	mouse = camera -> screenToWorld(mouse);
-
-	if(mouse.x < pos.x+siz.x && mouse.x > pos.x && mouse.y < pos.y+siz.y && mouse.y > pos.y && nw == nullptr)
-		color = {255, 0, 0, 64};
-
-	camera -> renderRect(pos, siz, color, false);
-
-
-	color.a += 64;
-
-	vector2d a = {boundary.center.x - boundary.halfDimension + 0.2,
-				  	boundary.center.y - boundary.halfDimension + 0.2};
-
-	vector2d b = {boundary.center.x - boundary.halfDimension + 0.2,
-				  	boundary.center.y + boundary.halfDimension - 0.2};
-	camera -> renderLine(a, b, 0.4, color, false);
-
-	a = {boundary.center.x + boundary.halfDimension - 0.2,
-		boundary.center.y + boundary.halfDimension - 0.2};
-
-	b = {boundary.center.x + boundary.halfDimension - 0.2,
-		boundary.center.y - boundary.halfDimension + 0.2};
-	camera -> renderLine(a, b, 0.4, color, false);
-
-	a = {boundary.center.x - boundary.halfDimension + 0.2,
-		boundary.center.y - boundary.halfDimension + 0.2};
-
-	b = {boundary.center.x + boundary.halfDimension - 0.2,
-		boundary.center.y - boundary.halfDimension + 0.2};
-	camera -> renderLine(a, b, 0.4, color, false);
-
-	a = {boundary.center.x + boundary.halfDimension - 0.2,
-		boundary.center.y + boundary.halfDimension - 0.2};
-
-	b = {boundary.center.x - boundary.halfDimension + 0.2,
-		boundary.center.y + boundary.halfDimension - 0.2};
-	camera -> renderLine(a, b, 0.4, color, false);
-
-}
-
-void quadTree::insertParticle(particle* p)
-{
-	particles.push_back(p);
-}
-
-void quadTree::clear()
-{
-	if (nw)
-	{
-        nw->clear();
-        delete nw;
-        nw = nullptr;
-    }
-
-    if (ne)
-    {
-        ne->clear();
-        delete ne;
-        ne = nullptr;
-    }
-
-    if (sw)
-    {
-        sw->clear();
-        delete sw;
-        sw = nullptr;
-    }
-
-    if (se)
-    {
-        se->clear();
-        delete se;
-        se = nullptr;
-    }
-}
-
-void quadTree::getLeaves(std::vector<quadTree*>& quads)
-{
-	if(nw == nullptr)
-	{
-		quads.push_back(this);
-	}
-	else
-	{
-		nw -> getLeaves(quads);
-		ne -> getLeaves(quads);
-		sw -> getLeaves(quads);
-		se -> getLeaves(quads);
-	}
-}
 
 // Constructor for the simulation container
 simulationContainer::simulationContainer()
 {
-	density = 1; // Universal density of each particle (TODO: custom density for each)
-	restitution = 0.7; // 1: Perfect bounce, all kinetic energy is conserved, 0: No bounce, all kinetic energy is lost.
-	energyLoss = 0;
-	friction = 0.001;
-    overlapGap = 0.01;
+	density = 1; // Universal density of each particle
 
-	running = true;
+	restitution = 0.7; // Restitution coefficient for collisions (0: perfectly inelastic, 1: perfectly elastic)
 
-	quadrantCapacity = 192;
+	energyLoss = 0; // Energy loss factor during collisions
 
+	friction = 0.001; // Friction coefficient applied to particles
 
-	nodeHalfDimension = 5000;
-	nodeQuadTree = new quadTree({vector2d(0, 0), nodeHalfDimension}, quadrantCapacity);
+	overlapGap = 0.01; // Small gap to resolve overlaps
 
+	running = true; // Flag indicating if simulation is running
 
-	isPlacingParticle = false;
-	iterationSteps = 32;
+	quadrantCapacity = 192; // Maximum capacity of particles per quadrant in quadtree
+
+	nodeHalfDimension = 5000; // Half dimension of the simulation space
+
+	nodeQuadTree = new quadTree({vector2d(0, 0), nodeHalfDimension}, quadrantCapacity);	// Root of the quadtree system
+
+	isPlacingParticle = false; // Flag for placing a particle
+
+	iterationSteps = 32; // Number of iteration steps for collision resolution
 }
 
 
+
+// Update the simulation state
 void simulationContainer::update()
 {
-
-	selectedQuadTree = nullptr;
+    selectedQuadTree = nullptr;
 
     particleCount = int(particles.size());
 
+    // Update particles' positions and velocities
     for (auto& p : particles)
     {
         // Calculate friction forces
         double frictionX = (p.velocity.x > 0) ? -friction : friction;
         double frictionY = (p.velocity.y > 0) ? -friction : friction;
 
-        // Update p velocities with accelerations
+        // Update velocities with accelerations
         p.velocity.x += p.acceleration.x;
         p.velocity.y += p.acceleration.y;
 
-        // Update particle positions based on velocities
+        // Update positions based on velocities
         p.position.x += p.velocity.x;
         p.position.y += p.velocity.y;
 
-        // Apply friction-like force
+        // Apply friction force
         p.velocity.x += frictionX;
         p.velocity.y += frictionY;
     }
 
-    nodeQuadTree -> clear();
+    nodeQuadTree->clear();
+
     nodeQuadTree = new quadTree({vector2d(0, 0), nodeHalfDimension}, quadrantCapacity);
 
+    // Insert particles into the quadtree
     for (size_t i = 0; i < particles.size(); ++i)
     {
-    	if(particles[i].position.x > nodeHalfDimension || particles[i].position.x < -nodeHalfDimension || particles[i].position.y > nodeHalfDimension || particles[i].position.y < -nodeHalfDimension)
-    	{
-    		particles.erase(particles.begin() + i);
-    		continue;
-    	}
+        // Remove particles outside the nodeHalfDimension bounds
+        if (particles[i].position.x > nodeHalfDimension || particles[i].position.x < -nodeHalfDimension || particles[i].position.y > nodeHalfDimension || particles[i].position.y < -nodeHalfDimension)
+        {
+            particles.erase(particles.begin() + i);
+            continue;
+        }
 
-    	nodeQuadTree -> insertParticle(&particles[i]);
-    	particles[i].updated = false;
+        nodeQuadTree->insertParticle(&particles[i]);
+
+        particles[i].updated = false;
     }
 
-    nodeQuadTree -> split();
+    nodeQuadTree->split();
 
+    // Get leaves of the quadtree
     std::vector<quadTree*> quads;
-    nodeQuadTree -> getLeaves(quads);
+    nodeQuadTree->getLeaves(quads);
 
+    // Create worker threads to handle collisions in each quadrant
     std::vector<std::thread> workers;
-
     for (auto& q : quads)
     {
-    	if(q -> particles.size() == 0)
-    		continue;
-    	//worker(q);
-    	workers.push_back(std::thread(&simulationContainer::worker, this, q));
+        // Skip empty quadrants
+        if (q->particles.size() == 0)
+            continue;
+
+        workers.push_back(std::thread(&simulationContainer::worker, this, q));
     }
+
+    // Wait for all worker threads to finish
     for (auto& w : workers)
     {
-    	w.join();
+        w.join();
     }
 }
+
 
 // Render the simulation
 void simulationContainer::render(aCamera *camera)
 {
-	// Render placing particle preview line if needed
-	if(isPlacingParticle)
-	{
-		int x, y;
-		SDL_GetMouseState(&x, &y);
-		vector2d mouse = {double(x), double(y)};
-		mouse = camera -> screenToWorld(mouse);
-		camera -> renderLine(placeParticlePosition, mouse, 0.1, {255, 0, 0, 255}, false);
-	}
+    // Render placing particle preview line if necessary
+    if(isPlacingParticle)
+    {
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        vector2d mouse = {double(x), double(y)};
 
- 	// Render particles and static lines with respectively velocity and normal vectors 
-	for (auto& p : particles)
-	{
-		p.render(camera);
-		//p.renderDebug(camera);
-	}
+        mouse = camera->screenToWorld(mouse);
 
-	if(selectedQuadTree != nullptr)
-  {
-		for(auto& p : selectedQuadTree -> particles)
-		{
-			p -> renderDebug(camera);
+        camera->renderLine(placeParticlePosition, mouse, 0.1, {255, 0, 0, 255}, false);
     }
-  }
 
-	for(auto& l : staticLines)
-	{
-		l.render(camera);
-		l.renderNormal(camera);
-	}
+    // Render particles 
+    for (auto& p : particles)
+    {
+        p.render(camera);
+    }
+
+    // Render debug information for particles in the selected quadtree
+    if(selectedQuadTree != nullptr)
+    {
+        for(auto& p : selectedQuadTree->particles)
+        {
+            p->renderDebug(camera);
+        }
+    }
+
+    // Render static lines and their normals
+    for(auto& l : staticLines)
+    {
+        l.render(camera);
+        l.renderNormal(camera);
+    }
 }
 
+
+// Select a quadtree
 void simulationContainer::select(aCamera* camera)
 {
-	//printf("%i\n", particles.size());
-	std::vector<quadTree*> quads;
-    nodeQuadTree -> getLeaves(quads);
+    // Retrieve all leaf nodes of the quadtree
+    std::vector<quadTree*> quads;
+    nodeQuadTree->getLeaves(quads);
 
+    // Get the current mouse position
     int x, y;
     SDL_GetMouseState(&x, &y);
     vector2d mouse = {double(x), double(y)};
-    mouse = camera -> screenToWorld(mouse);
+    mouse = camera->screenToWorld(mouse);
 
+    // Iterate through each leaf node of the quadtree
     for(auto& q : quads)
     {
-    	if
-    	(
-    		mouse.x < q -> boundary.center.x + q -> boundary.halfDimension &&
-    		mouse.x > q -> boundary.center.x - q -> boundary.halfDimension &&
-    		mouse.y < q -> boundary.center.y + q -> boundary.halfDimension &&
-    		mouse.y > q -> boundary.center.y - q -> boundary.halfDimension
-    	)
-    	{
-    		selectedQuadTree = q;
-    		break;
-    	}
-
+        // Check if the mouse position falls within the bounds of the current quadtree node
+        if(mouse.x < q->boundary.center.x + q->boundary.halfDimension &&
+           mouse.x > q->boundary.center.x - q->boundary.halfDimension &&
+           mouse.y < q->boundary.center.y + q->boundary.halfDimension &&
+           mouse.y > q->boundary.center.y - q->boundary.halfDimension)
+        {
+            selectedQuadTree = q;
+            break;
+        }
     }
 }
 
+
+// Render the quadtree structure on the screen
 void simulationContainer::renderQuadTree(aCamera *camera, vector2d mouse)
 {
-	if(nodeQuadTree == nullptr)
-		return;
+ 	// Return if the quadtree is not initialized
+    if (nodeQuadTree == nullptr)
+        return;
 
-
-	nodeQuadTree -> render(camera, mouse);
+    nodeQuadTree->render(camera, mouse);
 }
 
-
-// Start placing and place a particle at a specified position with velocity vector pointing towards the mouse release location
+// Start placing and place a particle at a specified position
 void simulationContainer::placeParticle(vector2d position, double radius, bool state)
 {
-	if(!state)
-	{
-		placeParticlePosition = position;
-		isPlacingParticle = true;
-	}
-	else
-	{
-		particles.push_back(particle(placeParticlePosition, radius));
-		particles[particles.size()-1].velocity = placeParticlePosition.getVector(position);
-		particles[particles.size()-1].velocity.x /= -10;
-		particles[particles.size()-1].velocity.y /= -10;
-		isPlacingParticle = false;
-
-	}
+    if (!state)
+    {
+        // Set the position for placing a particle and activate placement mode
+        placeParticlePosition = position;
+        isPlacingParticle = true;
+    }
+    else
+    {
+        // Add a new particle to the simulation at the position where the mouse was released
+        particles.push_back(particle(placeParticlePosition, radius));
+        
+        // Set the velocity of the newly added particle towards the release position of the mouse
+        particles[particles.size() - 1].velocity = placeParticlePosition.getVector(position);
+        particles[particles.size() - 1].velocity.x /= -10;
+        particles[particles.size() - 1].velocity.y /= -10;
+        
+        // Deactivate placement mode
+        isPlacingParticle = false;
+    }
 }
 
+// Add a static point to the simulation
 void simulationContainer::addStaticPoint(vector2d position)
 {
-	staticPoints.push_back(staticPoint(position));
+    staticPoints.push_back(staticPoint(position));
 }
 
+// Add a static line to the simulation
 void simulationContainer::addStaticLine(int a, int b)
 {
-	staticLines.push_back(staticLine(&staticPoints[a], &staticPoints[b]));
+    staticLines.push_back(staticLine(&staticPoints[a], &staticPoints[b]));
 }
 
 // Toggle the simulation running state
 void simulationContainer::switchRunning()
 {
-	running = running ? false : true;
+    running = !running;
 }
 
 // Get the simulation running state
 bool simulationContainer::getRunning()
 {
-	return running;
+    return running;
 }
 
 // Add a particle to the simulation
 void simulationContainer::addParticle(vector2d position, double radius)
 {
-	particles.push_back(particle(position, radius));
+    particles.push_back(particle(position, radius));
 }
-// Get a pointer to a particle by its ID in the `particles` vector
+
+// Get a pointer to a particle by its ID
 particle* simulationContainer::getParticle(int id)
 {
-	return &particles[id];
+    return &particles[id];
 }
 
+// Get the count of particles in the simulation
 int* simulationContainer::getParticleCount()
 {
-	return &particleCount;
+    return &particleCount;
 }
 
+// Worker function for multithreaded collision detection
 void simulationContainer::worker(quadTree* q)
 {
-	
 	double radiiSum = 0;
     double overlapDistance = 0;
     vector2d overlap = {0, 0};
     double totalArea = 0;
     double factorA = 0;
     double factorB = 0;
+    double areaA = 0;
+    double areaB = 0;
     vector2d collisionNormal = {0, 0};
     vector2d velocity = {0, 0};
     double relativeVelocity = 0;
     double impulse = 0;
+    int iterations = (int(q -> particles.size()) < iterationSteps) ? int(q -> particles.size()) < iterationSteps : iterationSteps;
 
-    for (int ii = 0; ii < iterationSteps; ++ii)
+    for (int ii = 0; ii < iterations; ++ii)
     {
         // Collision resolution for particles
         
-        for (auto& a : q -> particles)
-        {
-        	a -> lock();
+        // Iterate over each particle in the current quad tree node
+		for (auto& a : q->particles)
+		{
+		    // Lock the particle to prevent concurrent access
+		    a->lock();
 
-            for (auto& b : q -> particles)
-            {
-                if (a != b)
-                {
-                    // Calculate particle radii sum
-                    radiiSum = a -> radius + b -> radius;
-                    
-                    // Skip if particles are not touching
-                    if((radiiSum*radiiSum) >= a -> position.distanceSquared(b -> position))
-                    {
-                    	overlapDistance = radiiSum - a -> position.distance(b -> position);
-                        // Calculate overlap direction vector
-                        overlap = a -> position.getVector(b -> position);
-                        overlap.normalize(overlapDistance);
+		    // Iterate over each particle in the current quad tree node (nested loop)
+		    for (auto& b : q->particles)
+		    {
+		        // Avoid collision checks with the same particle
+		        if (a == b)
+		        	continue;
+		        
+	            // Calculate the sum of radii of the two particles
+	            radiiSum = a->radius + b->radius;
 
-                        // Adjust particle positions to resolve overlap
-                        totalArea = a -> getArea() + b -> getArea();
-                        factorA = a -> getArea() / totalArea;
-                       	factorB = b -> getArea() / totalArea;
-
-                        a -> position.x += overlap.x * factorB;
-                        a -> position.y += overlap.y * factorB;
-                        b -> position.x -= overlap.x * factorA;
-                        b -> position.y -= overlap.y * factorA;
-
-                        // Calculate collision normal direction
-                        collisionNormal = a -> position.getVector(b -> position);
-                        collisionNormal.normalize(1);
-
-                        // Calculate relative velocity along collision normal
-                        velocity = {b -> velocity.x - a -> velocity.x,
-                                    b -> velocity.y - a -> velocity.y};
-                        relativeVelocity = velocity.dot(collisionNormal);
-
-                        // Calculate collision impulse for energy exchange
-                        impulse = -((1 + restitution) * relativeVelocity) / (1 / (a -> getArea() * density) + 1 / (b -> getArea() * density));
-
-                        // Update velocities based on collision impulse
-                        a -> velocity.x -= (impulse / (a -> getArea() * density) * collisionNormal.x * (1 - energyLoss));
-                        a -> velocity.y -= (impulse / (a -> getArea() * density) * collisionNormal.y * (1 - energyLoss));
-                        b -> velocity.x += (impulse / (b -> getArea() * density) * collisionNormal.x * (1 - energyLoss));
-                        b -> velocity.y += (impulse / (b -> getArea() * density) * collisionNormal.y * (1 - energyLoss));
-                    }
-                }
-
+	            // Skip collision detection if particles are not close enough
+	            if ((radiiSum * radiiSum) < a->position.distanceSquared(b->position))
+	            	continue;
+	            
+                // Calculate the distance by which the particles overlap
+                overlapDistance = radiiSum - a->position.distance(b->position);
                 
-            }
+                // Calculate the direction vector of overlap
+                overlap = a->position.getVector(b->position);
+                overlap.normalize(overlapDistance);
 
-            a -> unlock();
+                // Calculate the areas of the particles
+                areaA = a->getArea();
+                areaB = b->getArea();
 
-        }
+                // Calculate the total area for overlap adjustment
+                totalArea = areaA + areaB;
 
-        //Collision resolution with static lines
-        for (auto& p : q -> particles)
-        {
-        	p -> lock();
+                // Calculate factors for adjusting particle positions
+                factorA = areaA / totalArea;
+                factorB = areaB / totalArea;
 
-            for (auto& staticLine : staticLines)
-            {
-                double overlap = staticLine.checkParticleCollision(*p);
-                if (overlap < p -> radius)
-                {
-                    // Get normal vector of static line
-                    vector2d normal = staticLine.getNormal();
-                    normal.normalize(1);
+                // Adjust particle positions to resolve overlap
+                a->position.x += overlap.x * factorB;
+                a->position.y += overlap.y * factorB;
+                b->position.x -= overlap.x * factorA;
+                b->position.y -= overlap.y * factorA;
 
-                    // Adjust particle positions to resolve overlap
-                    p -> position.x += (p -> radius - overlap + overlapGap) * normal.x;
-                    p -> position.y += (p -> radius - overlap + overlapGap) * normal.y;
+                // Calculate the collision normal direction
+                collisionNormal = a->position.getVector(b->position);
+                collisionNormal.normalize(1);
 
-                    // Calculate dot product of particle velocity and normal vector
-                    double dot = 2 * (p -> velocity.x * normal.x + p -> velocity.y * normal.y);
+                // Calculate the relative velocity along the collision normal
+                velocity = {b->velocity.x - a->velocity.x, b->velocity.y - a->velocity.y};
+                relativeVelocity = velocity.dot(collisionNormal);
 
-                    // Reflect particle velocity based on collision normal and restitution factor
-                    p -> velocity.x -= dot * normal.x * (1 - energyLoss) * restitution;
-                    p -> velocity.y -= dot * normal.y * (1 - energyLoss) * restitution;
-                }
-            }
+                // Calculate the collision impulse for energy exchange
+                impulse = -((1 + restitution) * relativeVelocity) / (1 / (areaA * density) + 1 / (areaB * density));
 
-            p -> unlock();
-        }
+                // Update velocities based on collision impulse and energy loss
+                a->velocity.x -= (impulse / (areaA * density) * collisionNormal.x * (1 - energyLoss));
+                a->velocity.y -= (impulse / (areaA * density) * collisionNormal.y * (1 - energyLoss));
+                b->velocity.x += (impulse / (areaB * density) * collisionNormal.x * (1 - energyLoss));
+                b->velocity.y += (impulse / (areaB * density) * collisionNormal.y * (1 - energyLoss));
+		            
+		        
+		    }
+
+		    // Unlock the particle after collision detection and resolution
+		    a->unlock();
+		}
+
+
+        // Collision resolution with static lines
+		for (auto& p : q->particles)
+		{
+		    // Lock the particle to prevent concurrent access
+		    p->lock();
+
+		    // Iterate over each static line for collision detection
+		    for (auto& staticLine : staticLines)
+		    {
+		        // Check for overlap between the particle and the static line
+		        double overlap = staticLine.checkParticleCollision(*p);
+		        
+		        // If overlap exists
+		        if (overlap < p->radius)
+		        {
+		            // Get the normal vector of the static line
+		            vector2d normal = staticLine.getNormal();
+		            normal.normalize(1);
+
+		            // Adjust particle positions to resolve overlap
+		            p->position.x += (p->radius - overlap + overlapGap) * normal.x;
+		            p->position.y += (p->radius - overlap + overlapGap) * normal.y;
+
+		            // Calculate the dot product of particle velocity and normal vector
+		            double dot = 2 * (p->velocity.x * normal.x + p->velocity.y * normal.y);
+
+		            // Reflect particle velocity based on collision normal, restitution factor, and energy loss
+		            p->velocity.x -= dot * normal.x * (1 - energyLoss) * restitution;
+		            p->velocity.y -= dot * normal.y * (1 - energyLoss) * restitution;
+		        }
+		    }
+
+		    // Unlock the particle after collision resolution
+		    p->unlock();
+		}
     }
 }
 

@@ -37,3 +37,23 @@ void grid::render(aCamera *camera)
 		camera -> renderLine(a, b, 0.1, color, false);
 	}
 }
+
+
+mutexWrapper::mutexWrapper() 
+:mutex_ptr(std::make_unique<std::mutex>()) 
+{}
+
+mutexWrapper::mutexWrapper(mutexWrapper&& other)
+:mutex_ptr(std::move(other.mutex_ptr))
+{}
+
+mutexWrapper& mutexWrapper::operator=(mutexWrapper&& other)
+{
+    if (this != &other)
+    {
+        mutex_ptr = std::move(other.mutex_ptr);
+    }
+
+    return *this;
+}
+

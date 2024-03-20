@@ -18,6 +18,8 @@ menu* generateMenu(simulationContainer* container);
 simulationContainer* generateSimulationContainer();
 
 double fps = 0;
+double avgFps = 0;
+int secFps = 0;
 
 
 int main(int argc, char* args[])
@@ -45,9 +47,7 @@ int main(int argc, char* args[])
 	// 		container -> addParticle(vector2d(x, y), 1);
 	// 	}
 	// }
-
 	
-
 	// Initialize SDL_Event for handling events
 	SDL_Event event;
 
@@ -55,7 +55,6 @@ int main(int argc, char* args[])
 	double accumulator = 0.0f;
 	double currentTime = SDL_GetTicks() * 0.001f;
 	Uint32 fpsFrame;
-	float avgFps = 0;
 	int frames = 0;
 
 	bool running = true;
@@ -86,21 +85,18 @@ int main(int argc, char* args[])
 					// Start placing a particle, this will be it's position
 					if (event.button.button == SDL_BUTTON_LEFT)
 					{		
-						int x, y;
-						SDL_GetMouseState(&x, &y);	
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 20, 0);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 20, 0);
 					}
+					break;
 
 				case SDL_MOUSEBUTTONUP:
 					// Finish placing a particle, it's velocity will be pointing towards this point
 					if (event.button.button == SDL_BUTTON_LEFT)
 					{
-						int x, y;
-						SDL_GetMouseState(&x, &y);	
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(x, y)), 20, 1);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 20, 1);
 					}
-
 					break;
+
 				case SDL_KEYDOWN:
 						// Handle key presses
 						switch (event.key.keysym.sym)
@@ -125,6 +121,7 @@ int main(int argc, char* args[])
 								container -> select(&mainCamera);
 								break;
 						}
+						break;
 				case SDL_WINDOWEVENT:
 					// Handle window events, like resizing
 					if(event.window.event == SDL_WINDOWEVENT_RESIZED)
@@ -134,6 +131,7 @@ int main(int argc, char* args[])
 						mainWindow.updateSize(w, h);
 						mainCamera.setSize(w, h);
 					}
+					break;
 				}
 			}
 			accumulator = timeStep;
@@ -167,8 +165,8 @@ int main(int argc, char* args[])
 		    mainCamera.zoomCamera(-0.1);
 		if(state[SDL_SCANCODE_F])
 		{
-			for (int i = 0; i < 20; ++i)
-				container -> addParticle(mainCamera.screenToWorld(vector2d(mouseX+i, mouseY+i)), 1);	
+			for (int i = 0; i < 50; ++i)
+				container -> addParticle(mainCamera.screenToWorld(vector2d(mouseX+double(i)/1000, mouseY+double(i)/1000)), 1);	
 		}
 
 		mainWindow.clear();
@@ -200,6 +198,13 @@ int main(int argc, char* args[])
 		fps = (fpsFrame > 0) ? 1000.0f / fpsFrame : 0.0f;
 		avgFps += fps;
 		frames++;
+		if(frames >= fps)
+		{
+			secFps = int(round(avgFps /= frames));
+			avgFps = 0;
+			frames = 0;
+		}
+
 
 		// s--;
 		// if(s <= 0)
@@ -222,7 +227,7 @@ menu* generateMenu(simulationContainer* container)
 	tab* test2 = new tab(vector2d(0, 41), "settings");
 
 	test1 -> insertElement(new tabDisplayI(container -> getParticleCount(), 1, "particles: "));
-	test1 -> insertElement(new tabDisplayD(&fps, 1, "fps: "));
+	test1 -> insertElement(new tabDisplayI(&secFps, 1, "fps: "));
 
 	mainMenu -> insertTab(test1);
 	mainMenu -> insertTab(test2);
@@ -232,6 +237,7 @@ menu* generateMenu(simulationContainer* container)
 simulationContainer* generateSimulationContainer()
 {
 	simulationContainer* container = new simulationContainer;
+
 	// for(int i = 0; i < 10; ++i)
 	//  	for (int ii = 0; ii < 40; ++ii)
 	//  		container -> addParticle(vector2d(i*1.6-60, ii*1.6), 0.8);
