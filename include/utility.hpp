@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 
 #include "math.hpp"
 #include "aCamera.hpp"

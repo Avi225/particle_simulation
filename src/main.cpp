@@ -98,30 +98,30 @@ int main(int argc, char* args[])
 					break;
 
 				case SDL_KEYDOWN:
-						// Handle key presses
-						switch (event.key.keysym.sym)
-						{
-							case SDLK_F11:
-								// Toggle fullscreen mode
-								mainWindow.switchFullscreen();
-								int w, h;
-								mainWindow.getSize(&w, &h);
-								mainWindow.updateSize(w, h);
-								mainCamera.setSize(w, h);
-								break;
-							case SDLK_SPACE:
-								// Toggle simulation running
-								container -> switchRunning();
-								break;
-							case SDLK_r:
-								// Advance the simulation by 1 tick
-								container -> update();
-								break;
-							case SDLK_z:
-								container -> select(&mainCamera);
-								break;
-						}
-						break;
+					// Handle key presses
+					switch (event.key.keysym.sym)
+					{
+						case SDLK_F11:
+							// Toggle fullscreen mode
+							mainWindow.switchFullscreen();
+							int w, h;
+							mainWindow.getSize(&w, &h);
+							mainWindow.updateSize(w, h);
+							mainCamera.setSize(w, h);
+							break;
+						case SDLK_SPACE:
+							// Toggle simulation running
+							container -> switchRunning();
+							break;
+						case SDLK_r:
+							// Advance the simulation by 1 tick
+							container -> update();
+							break;
+						case SDLK_z:
+							container -> select(&mainCamera);
+							break;
+					}
+					break;
 				case SDL_WINDOWEVENT:
 					// Handle window events, like resizing
 					if(event.window.event == SDL_WINDOWEVENT_RESIZED)
