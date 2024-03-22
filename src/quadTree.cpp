@@ -20,7 +20,7 @@ quadTree::quadTree(quadTreeBox nBoundary, int nCapacity)
 void quadTree::split()
 {
 	// Check if splitting is necessary
-	if(int(particles.size()) <= capacity || boundary.halfDimension/2 <= 2)
+	if((int(particles.size()) <= capacity) || (boundary.halfDimension/2 <= 2))
 		return;
 
 	// Define the boundaries of the quadrants
@@ -32,20 +32,20 @@ void quadTree::split()
 	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
 	nw = new quadTree(nBoundary, capacity);
 
-	// Northeast quadrant
-	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
-	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
-	ne = new quadTree(nBoundary, capacity);
-
 	// Southwest quadrant
-	nBoundary.center.x = boundary.center.x - (boundary.halfDimension / 2);
 	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
 	sw = new quadTree(nBoundary, capacity);
 
 	// Southeast quadrant
 	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
-	nBoundary.center.y = boundary.center.y + (boundary.halfDimension / 2);
 	se = new quadTree(nBoundary, capacity);
+
+	// Northeast quadrant
+	nBoundary.center.x = boundary.center.x + (boundary.halfDimension / 2);
+	nBoundary.center.y = boundary.center.y - (boundary.halfDimension / 2);
+	ne = new quadTree(nBoundary, capacity);
+
+	
 
 	// Distribute particles among the quadrants
 	for (particle* p : particles)

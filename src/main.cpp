@@ -30,7 +30,7 @@ int main(int argc, char* args[])
 	SDL_Init(SDL_INIT_VIDEO);
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();
-	int s = 800;
+	int s = 200;
 
 	// Create a main window and camera
 	aWindow mainWindow("particles", 1920/2, 1080/2);
@@ -43,7 +43,7 @@ int main(int argc, char* args[])
 
 	for (int x = -40; x < 40; ++x)
 	{
-		for (int y = -200; y < -150; ++y)
+		for (int y = -200; y < -190; ++y)
 		{
 			container -> addParticle(vector2d(x, y), 1);
 		}
@@ -209,15 +209,18 @@ int main(int argc, char* args[])
 
 		s--;
 		if(s <= 0)
-			break;
+	 	{
+	 		printf("%f fps average\n", totalFpsAvg/totalFrames);
+	 		break;
+	 	}
 	}
-
+	
+	system("pause");
 	// Cleanup and quit SDL, SDL_image, and SDL_ttf libraries
 	mainWindow.cleanUp();
 	TTF_Quit();
 	SDL_Quit();
-	printf("%f fps average\n", totalFpsAvg/totalFrames);
-	system("pause");
+	
 	return 0;
 }
 
