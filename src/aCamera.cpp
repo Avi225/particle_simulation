@@ -83,30 +83,32 @@ void aCamera::worldToScreen(vector2d* a)
 void aCamera::renderLine(vector2d a, vector2d b, double thickness, SDL_Color color, bool UI)
 {
 	SDL_Rect rect;
+	double distance = 0;
 	if(!UI)
 	{
 		worldToScreen(&a);
 		worldToScreen(&b);
+		distance = a.distance(b);
 
 		rect = 
 		{
 			int((a.x+b.x)/2-thickness * zoomScale * zoom/2),
-			int((a.y+b.y)/2-a.distance(b)/2),
+			int((a.y+b.y)/2-distance/2),
 			int(clamp(thickness * zoomScale * zoom, 1)),
-			int(a.distance(b))
+			int(distance)
 		};
 	}else
 	{
+		distance = distance;
 		rect = 
 		{
 			int((a.x+b.x)/2-thickness),
-			int((a.y+b.y)/2-a.distance(b)/2),
+			int((a.y+b.y)/2-distance/2),
 			int(thickness),
-			int(a.distance(b))
+			int(distance)
 		};
 	}
 	vector2d rotation = a.getVector(b);
-	rotation.normalize(1);
 	double angle = rotation.getAngle();
 	window -> renderTexture(textures["basic"], rect, angle, color); 
 }

@@ -44,7 +44,7 @@ struct vector2d
 	void print();
 
 	void normalize(double target);
-	void normalizeFast(double target);
+	void normalizeSquared(double target);
 
 	double distance(vector2d target);
 

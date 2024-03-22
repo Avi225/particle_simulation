@@ -48,23 +48,23 @@ void quadTree::split()
 	se = new quadTree(nBoundary, capacity);
 
 	// Distribute particles among the quadrants
-	for (auto& p : particles)
+	for (particle* p : particles)
 	{
 		if(p -> position.x >= (boundary.center.x - p -> radius * 4))
 		{
 			if(p -> position.y >= (boundary.center.y - p -> radius * 4))
-				se -> insertParticle(p);
+				se -> particles.push_back(p);
 
 			if(p -> position.y <= (boundary.center.y + p -> radius * 4))
-				ne -> insertParticle(p);
+				ne -> particles.push_back(p);
 		}
 		if(p -> position.x <= (boundary.center.x + p -> radius * 4))
 		{
 			if(p -> position.y >= (boundary.center.y - p -> radius * 4))
-				sw -> insertParticle(p);
+				sw -> particles.push_back(p);
 
 			if(p -> position.y <= (boundary.center.y + p -> radius * 4))
-				nw -> insertParticle(p);
+				nw -> particles.push_back(p);
 		}
 	}
 

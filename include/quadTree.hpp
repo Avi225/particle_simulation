@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <deque>
 #include <string>
 
 #include "math.hpp"
@@ -30,7 +31,7 @@ struct quadTree
 
 	quadTreeBox boundary;
 	const int capacity;
-	std::vector<particle*> particles;
+	std::deque<particle*> particles;
 
 	quadTree* nw;
 	quadTree* ne;

@@ -165,14 +165,13 @@ void aWindow::renderTexture(SDL_Texture* texture, SDL_Rect destination, double a
 void aWindow::renderPixel(vector2d position, SDL_Color color)
 {
 	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-	
+
 	position *= resolutionMultiplier;
+
 	SDL_RenderDrawPoint(renderer, int(position.x), int(position.y));
 
 	SDL_SetRenderDrawColor(renderer, background.r, background.g, background.b, background.a);
-
 }
-
 
 void aWindow::updateSize(int nWidth, int nHeight)
 {

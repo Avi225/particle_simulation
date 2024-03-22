@@ -164,6 +164,15 @@ void vector2d::normalize(double target)
 	y *= target;
 }
 
+void vector2d::normalizeSquared(double target)
+{
+	double i = x * x + y * y;
+	x /= i;
+	y /= i;
+	x *= target;
+	y *= target;
+}
+
 double vector2d::distance(vector2d target)
 {
 	return sqrt((x - target.x) * (x - target.x) + (y - target.y) * (y - target.y));

@@ -290,7 +290,9 @@ void simulationContainer::worker(quadTree* q)
                 
                 // Calculate the direction vector of overlap
                 overlap = a->position.getVector(b->position);
+
                 overlap.normalize(overlapDistance);
+
 
                 // Calculate the areas of the particles
                 areaA = a->getArea();

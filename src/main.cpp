@@ -16,11 +16,13 @@
 
 menu* generateMenu(simulationContainer* container);
 simulationContainer* generateSimulationContainer();
+void renderScene(aCamera* camera, aWindow* window, grid* mainGrid, simulationContainer* container, menu* mainMenu);
 
 double fps = 0;
 double avgFps = 0;
+double totalFpsAvg = 0;
+double totalFrames = 0;
 int secFps = 0;
-
 
 int main(int argc, char* args[])
 {
@@ -28,25 +30,24 @@ int main(int argc, char* args[])
 	SDL_Init(SDL_INIT_VIDEO);
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();
-	// int s = 800;
+	int s = 800;
 
 	// Create a main window and camera
 	aWindow mainWindow("particles", 1920/2, 1080/2);
 	aCamera mainCamera(1920/2, 1080/2, &mainWindow);
 
 	// Create simulation container and grid
-	
 	simulationContainer* container = generateSimulationContainer();
 	menu* mainMenu = generateMenu(container);
 	grid mainGrid(vector2d(0, 0), 101, 101, 5, 5);
 
-	// for (int x = -50; x < 50; ++x)
-	// {
-	// 	for (int y = -200; y < -150; ++y)
-	// 	{
-	// 		container -> addParticle(vector2d(x, y), 1);
-	// 	}
-	// }
+	for (int x = -40; x < 40; ++x)
+	{
+		for (int y = -200; y < -150; ++y)
+		{
+			container -> addParticle(vector2d(x, y), 1);
+		}
+	}
 	
 	// Initialize SDL_Event for handling events
 	SDL_Event event;
@@ -150,45 +151,43 @@ int main(int argc, char* args[])
 			    mainCamera.moveCamera(vector2d(0, 1.5));
 			if(state[SDL_SCANCODE_S])
 			    mainCamera.moveCamera(vector2d(0, -1.5));
+			if(state[SDL_SCANCODE_E])
+			    mainCamera.zoomCamera(0.3);
+			if(state[SDL_SCANCODE_Q])
+			    mainCamera.zoomCamera(-0.3);
+		}else
+		{
+			if(state[SDL_SCANCODE_A])
+			    mainCamera.moveCamera(vector2d(0.5, 0));
+			if(state[SDL_SCANCODE_D])
+			    mainCamera.moveCamera(vector2d(-0.5, 0));
+			if(state[SDL_SCANCODE_W])
+			    mainCamera.moveCamera(vector2d(0, 0.5));
+			if(state[SDL_SCANCODE_S])
+			    mainCamera.moveCamera(vector2d(0, -0.5));
+			if(state[SDL_SCANCODE_E])
+			    mainCamera.zoomCamera(0.1);
+			if(state[SDL_SCANCODE_Q])
+			    mainCamera.zoomCamera(-0.1);
 		}
-		if(state[SDL_SCANCODE_A])
-		    mainCamera.moveCamera(vector2d(0.5, 0));
-		if(state[SDL_SCANCODE_D])
-		    mainCamera.moveCamera(vector2d(-0.5, 0));
-		if(state[SDL_SCANCODE_W])
-		    mainCamera.moveCamera(vector2d(0, 0.5));
-		if(state[SDL_SCANCODE_S])
-		    mainCamera.moveCamera(vector2d(0, -0.5));
-		if(state[SDL_SCANCODE_E])
-		    mainCamera.zoomCamera(0.1);
-		if(state[SDL_SCANCODE_Q])
-		    mainCamera.zoomCamera(-0.1);
 		if(state[SDL_SCANCODE_F])
 		{
 			for (int i = 0; i < 50; ++i)
 				container -> addParticle(mainCamera.screenToWorld(vector2d(mouseX+double(i)/1000, mouseY+double(i)/1000)), 1);	
 		}
 
-		mainWindow.clear();
-
 		// Update camera parameters
 		mainCamera.updateZoom();
 		mainCamera.updatePosition();
-
-		// Render
-		
-		mainGrid.render(&mainCamera);
-    
+    	
+    	//Update simulation container
 		if(container -> getRunning())
 			container -> update();
 
-		container -> render(&mainCamera);
-		container -> renderQuadTree(&mainCamera, {double(mouseX), double(mouseY)});
-
+		//Update main menu
 		mainMenu -> updateTabs();
-		mainMenu -> render(&mainCamera);
 
-		mainWindow.display();
+		renderScene(&mainCamera, &mainWindow, &mainGrid, container, mainMenu);
 
 		// Delay to maintain frame rate at monitor refresh rate
 		int frameTicks = SDL_GetTicks() - startTicks;
@@ -197,6 +196,8 @@ int main(int argc, char* args[])
 		fpsFrame = SDL_GetTicks() - startTicks;
 		fps = (fpsFrame > 0) ? 1000.0f / fpsFrame : 0.0f;
 		avgFps += fps;
+		totalFpsAvg += fps;
+		totalFrames++;
 		frames++;
 		if(frames >= fps)
 		{
@@ -206,17 +207,17 @@ int main(int argc, char* args[])
 		}
 
 
-		// s--;
-		// if(s <= 0)
-		// 	break;
+		s--;
+		if(s <= 0)
+			break;
 	}
 
 	// Cleanup and quit SDL, SDL_image, and SDL_ttf libraries
 	mainWindow.cleanUp();
 	TTF_Quit();
 	SDL_Quit();
-	// printf("%f fps average\n", avgFps/frames);
-	// system("pause");
+	printf("%f fps average\n", totalFpsAvg/totalFrames);
+	system("pause");
 	return 0;
 }
 
@@ -249,3 +250,21 @@ simulationContainer* generateSimulationContainer()
 
 	return(container);
 }
+
+void renderScene(aCamera* camera, aWindow* window, grid* mainGrid, simulationContainer* container, menu* mainMenu)
+{
+	int mouseX, mouseY;
+	SDL_GetMouseState(&mouseX, &mouseY);
+
+	window -> clear();
+	
+	mainGrid -> render(camera);
+
+	container -> render(camera);
+	container -> renderQuadTree(camera, {double(mouseX), double(mouseY)});
+
+	mainMenu -> render(camera);
+
+	window -> display();
+}
+

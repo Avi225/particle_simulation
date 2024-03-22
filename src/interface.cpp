@@ -1,5 +1,8 @@
 #include "interface.hpp"
 
+void tabElement::render(aCamera* camera, vector2d position)
+{}
+
 tabText::tabText(std::string nValue, int nSize)
 :value(nValue), size(nSize)
 {
@@ -63,8 +66,6 @@ void tabDisplayD::render(aCamera* camera, vector2d position)
 	SDL_Color color = {255, 255, 255, 255};
 	camera -> renderText(position, size, text + std::to_string(*value), color, 1);
 }
-
-
 
 tab::tab(vector2d nPosition, std::string nName)
 : position(nPosition), name(nName)

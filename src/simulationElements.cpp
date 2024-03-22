@@ -5,7 +5,7 @@ particle::particle()
 : position({0, 0}), radius(1)
 {
 	velocity = {0, 0};
-	acceleration = {0, 0.1}; // Apply a small downwards gravity force
+	acceleration = {0, 0.03}; // Apply a small downwards gravity force
 	updated = false;
 }
 
@@ -14,7 +14,7 @@ particle::particle(vector2d nPosition, double nRadius)
 : position(nPosition), radius(nRadius)
 {
 	velocity = {0, 0};
-	acceleration = {0, 0.1}; // Apply a small downwards gravity force
+	acceleration = {0, 0.03}; // Apply a small downwards gravity force
 	updated = false;
 }
 
@@ -102,8 +102,7 @@ void staticLine::render(aCamera *camera)
 void staticLine::renderNormal(aCamera *camera)
 {
 	vector2d normal = getNormal();
-	normal.normalize(1);
-	camera -> renderLine((a->position + b->position) / 2, (a->position + b->position) / 2 + normal, 0.1, {0, 0, 255, 255}, false);
+	camera -> renderLine((a->position + b->position) / 2, (a->position + b->position) / 2 + (normal / 16), 0.1, {0, 0, 255, 255}, false);
 }
 
 // Get the normal vector of the static line
