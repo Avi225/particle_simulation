@@ -39,19 +39,20 @@ https://github.com/Avi225/particle_simulation/assets/61160595/b71bdaf8-afc3-4e10
 
 2. Get SDL2:
     - Download development versions for mingw of [SDL2](https://github.com/libsdl-org/SDL), [SDL2_image](https://github.com/libsdl-org/SDL_image) and [SDL2_ttf](https://github.com/libsdl-org/SDL_ttf)
-    - Extract and combine them in a memorable place, for example `C:/SDL2-w64`
-    
+    - Extract the contents of `x86_64-w64-mingw32` for all the libraries and combine them in a memorable place, for example `C:/SDL2-w64`
+    - Make sure the directory `C:\SDL2-w64\include\SDL2` contains `SDL2.h`, `SDL2_image.h` and `SDL2_ttf.h`
 3. Get g++ and mingw:
     - Install [MSYS2](https://www.msys2.org/) following the setup wizard
     - Run `ucrt64.exe` located in the MSYS2 install folder, for example `C:\msys64`
     - Enter `pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain` into the opened terminal
     - When prompted to select packages, press `ENTER` to download all
     - Add `C:\msys64\ucrt64\bin` and `C:\msys64\usr\bin` as entries to your `Path` system environmental variable, if not there already (adjust path if needed)
+    - Make sure that no other mingw32 directories are listed in the `Path` environmental variable, as an older version of the g++ compiler or the lack of certain libraries could prevent compiling or proper running of the software
 4. Build
     - Clone this repository
     - CD into `particle_simulation`
     - Enter `g++ -c src/*.cpp -std=c++20 -O3 -Wall -I include -I C:/SDL2-w64/include` to build the .o files (adjust SDL2 path if needed)
-    - Enter `g++ -static-libgcc -static-libstdc++ *.o -o bin/x64/build/particles -mwindows -s -L C:/SDL2-w64/lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image` to link (adjust SDL2 path if needed too)
+    - Enter `g++ -static-libgcc -static-libstdc++ *.o -o bin/x64/build/particles -mwindows -s -L C:/SDL2-w64/lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf` to link (adjust SDL2 path if needed too)
 5. Run
     - The executable should be located in `bin/x64/build`, the source code includes this directory and required DLL files to run on any machine
 
