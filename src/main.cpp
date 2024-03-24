@@ -23,6 +23,7 @@ double avgFps = 0;
 double totalFpsAvg = 0;
 double totalFrames = 0;
 int secFps = 0;
+int particleSpawnCount = 1;
 
 int main(int argc, char* args[])
 {
@@ -41,11 +42,11 @@ int main(int argc, char* args[])
 	menu* mainMenu = generateMenu(container);
 	grid mainGrid(vector2d(0, 0), 101, 101, 5, 5);
 
-	for (int x = -40; x < 40; ++x)
+	for (int x = -100; x < 100; ++x)
 	{
-		for (int y = -200; y < -190; ++y)
+		for (int y = -200; y < -180; ++y)
 		{
-			container -> addParticle(vector2d(x, y), 1);
+			container -> addParticle(vector2d(x, y), 0.5);
 		}
 	}
 	
@@ -133,6 +134,12 @@ int main(int argc, char* args[])
 						mainCamera.setSize(w, h);
 					}
 					break;
+				case SDL_MOUSEWHEEL:
+					if(event.wheel.y > 0)
+						particleSpawnCount += 1;
+					if(event.wheel.y < 0)
+						particleSpawnCount += (particleSpawnCount > 0) ? -1 : 0;
+					break;
 				}
 			}
 			accumulator = timeStep;
@@ -172,7 +179,7 @@ int main(int argc, char* args[])
 		}
 		if(state[SDL_SCANCODE_F])
 		{
-			for (int i = 0; i < 50; ++i)
+			for (int i = 0; i < particleSpawnCount; ++i)
 				container -> addParticle(mainCamera.screenToWorld(vector2d(mouseX+double(i)/1000, mouseY+double(i)/1000)), 1);	
 		}
 
@@ -191,8 +198,8 @@ int main(int argc, char* args[])
 
 		// Delay to maintain frame rate at monitor refresh rate
 		int frameTicks = SDL_GetTicks() - startTicks;
-		if (frameTicks < 1000 / mainWindow.getRefreshRate())
-			SDL_Delay(1000 / mainWindow.getRefreshRate() - frameTicks);
+		// if (frameTicks < 1000 / mainWindow.getRefreshRate())
+		// 	SDL_Delay(1000 / mainWindow.getRefreshRate() - frameTicks);
 		fpsFrame = SDL_GetTicks() - startTicks;
 		fps = (fpsFrame > 0) ? 1000.0f / fpsFrame : 0.0f;
 		avgFps += fps;
@@ -208,11 +215,11 @@ int main(int argc, char* args[])
 
 
 		s--;
-		if(s <= 0)
-	 	{
-	 		printf("%f fps average\n", totalFpsAvg/totalFrames);
-	 		break;
-	 	}
+		// if(s <= 0)
+	 	// {
+	 	// 	printf("%f fps average\n", totalFpsAvg/totalFrames);
+	 	// 	break;
+	 	// }
 	}
 	
 	system("pause");
@@ -234,7 +241,7 @@ menu* generateMenu(simulationContainer* container)
 	test1 -> insertElement(new tabDisplayI(&secFps, 1, "fps: "));
 
 	mainMenu -> insertTab(test1);
-	mainMenu -> insertTab(test2);
+	//mainMenu -> insertTab(test2);
 	return(mainMenu);
 }
 

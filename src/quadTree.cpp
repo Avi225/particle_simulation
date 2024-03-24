@@ -20,7 +20,7 @@ quadTree::quadTree(quadTreeBox nBoundary, int nCapacity)
 void quadTree::split()
 {
 	// Check if splitting is necessary
-	if((int(particles.size()) <= capacity) || (boundary.halfDimension/2 <= 2))
+	if((int(particles.size()) <= capacity) || (boundary.halfDimension/2 <= 1))
 		return;
 
 	// Define the boundaries of the quadrants
@@ -50,20 +50,20 @@ void quadTree::split()
 	// Distribute particles among the quadrants
 	for (particle* p : particles)
 	{
-		if(p -> position.x >= (boundary.center.x - p -> radius * 4))
+		if(p -> getPosition().x >= (boundary.center.x - p -> getRadius() * 2))
 		{
-			if(p -> position.y >= (boundary.center.y - p -> radius * 4))
+			if(p -> getPosition().y >= (boundary.center.y - p -> getRadius() * 2))
 				se -> particles.push_back(p);
 
-			if(p -> position.y <= (boundary.center.y + p -> radius * 4))
+			if(p -> getPosition().y <= (boundary.center.y + p -> getRadius() * 2))
 				ne -> particles.push_back(p);
 		}
-		if(p -> position.x <= (boundary.center.x + p -> radius * 4))
+		if(p -> getPosition().x <= (boundary.center.x + p -> getRadius() * 2))
 		{
-			if(p -> position.y >= (boundary.center.y - p -> radius * 4))
+			if(p -> getPosition().y >= (boundary.center.y - p -> getRadius() * 2))
 				sw -> particles.push_back(p);
 
-			if(p -> position.y <= (boundary.center.y + p -> radius * 4))
+			if(p -> getPosition().y <= (boundary.center.y + p -> getRadius() * 2))
 				nw -> particles.push_back(p);
 		}
 	}

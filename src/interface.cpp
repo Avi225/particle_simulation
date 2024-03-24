@@ -119,7 +119,7 @@ menu::menu(vector2d nPosition)
 void menu::insertTab(tab* nTab)
 {
 	tabs.push_back(nTab);
-	tabStates.push_back({false, false, false});
+	tabStates.push_back({false, false, true});
 }
 
 void menu::updateTabs()

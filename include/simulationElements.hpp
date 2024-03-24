@@ -2,35 +2,48 @@
 
 #include <vector>
 #include <string>
+#include <mutex>
+#include <shared_mutex>
 
 #include "math.hpp"
 #include "utility.hpp"
 #include "aCamera.hpp"
 
-struct particle
+class particle
 {
+public:
+
 	particle();
 	particle(vector2d nPosition, double nRadius);
-	particle(particle&& other);
-    particle& operator=(particle&& other);
 
 	void render(aCamera *camera);
 	void renderDebug(aCamera *camera);
 	double getArea();
 
-	void lock();
-	void unlock();
+	void setPosition(vector2d nPosition);
+	void setVelocity(vector2d nVelocity);
+	void setAcceleration(vector2d nAcceleration);
+	void setRadius(double nRadius);
 
-	vector2d previousPosition;
+	void addPosition(vector2d nPosition);
+	void addVelocity(vector2d nVelocity);
+	void addAcceleration(vector2d nAcceleration);
+	void addRadius(double nRadius);
+
+	vector2d getPosition();
+	vector2d getVelocity();
+	vector2d getAcceleration();
+	double getRadius();
+
+private:
+
 	vector2d position;
 	vector2d velocity;
 	vector2d acceleration;
 
 	double radius;
 
-	mutexWrapper mutex_;
-
-	bool updated;
+	std::shared_mutex mtx;
 };
 
 struct staticPoint
@@ -46,7 +59,7 @@ struct staticLine
 	void renderNormal(aCamera *camera);
 	vector2d getNormal();
 
-	double checkParticleCollision(const particle& target);
+	double checkParticleCollision(particle* target);
 	staticPoint* a;
 	staticPoint* b;
 };

@@ -6,7 +6,6 @@ particle::particle()
 {
 	velocity = {0, 0};
 	acceleration = {0, 0.03}; // Apply a small downwards gravity force
-	updated = false;
 }
 
 // Particle class constructor with specified position and radius
@@ -15,31 +14,30 @@ particle::particle(vector2d nPosition, double nRadius)
 {
 	velocity = {0, 0};
 	acceleration = {0, 0.03}; // Apply a small downwards gravity force
-	updated = false;
 }
 
 // Particle move constructor
-particle::particle(particle&& other)
-: position(std::move(other.position)),
-  velocity(std::move(other.velocity)),
-  acceleration(std::move(other.acceleration)),
-  radius(other.radius),
-  mutex_(std::move(other.mutex_)) 
-{}
+// particle::particle(particle&& other)
+// : position(std::move(other.position)),
+//   velocity(std::move(other.velocity)),
+//   acceleration(std::move(other.acceleration)),
+//   radius(other.radius),
+//   mutex_(std::move(other.mutex_)) 
+// {}
 
-// Particle move assignment operator
-particle& particle::operator=(particle&& other)
-{
-    if (this != &other)
-    {
-        position = std::move(other.position);
-        velocity = std::move(other.velocity);
-        acceleration = std::move(other.acceleration);
-        radius = other.radius;
-        mutex_ = std::move(other.mutex_);
-    }
-    return *this;
-}
+// // Particle move assignment operator
+// particle& particle::operator=(particle&& other)
+// {
+//     if (this != &other)
+//     {
+//         position = std::move(other.position);
+//         velocity = std::move(other.velocity);
+//         acceleration = std::move(other.acceleration);
+//         radius = other.radius;
+//         mutex_ = std::move(other.mutex_);
+//     }
+//     return *this;
+// }
 
 // Render the particle
 void particle::render(aCamera *camera)
@@ -70,16 +68,72 @@ double particle::getArea()
 	return 3.14159265359 * radius * radius;
 }
 
-// Lock the particle
-void particle::lock()
+void particle::setPosition(vector2d nPosition)
 {
-	mutex_.mutex_ptr -> lock();
+	//std::lock_guard<std::shared_mutex> lock(mtx);
+	position = nPosition;
 }
 
-// Unlock the particle
-void particle::unlock()
+void particle::setVelocity(vector2d nVelocity)
 {
-	mutex_.mutex_ptr -> unlock();
+	//std::lock_guard<std::shared_mutex> lock(mtx);
+	velocity = nVelocity;
+}
+
+void particle::setAcceleration(vector2d nAcceleration)
+{
+	//std::lock_guard<std::shared_mutex> lock(mtx);
+	acceleration = nAcceleration;
+}
+
+void particle::setRadius(double nRadius)
+{
+	//std::lock_guard<std::shared_mutex> lock(mtx);
+	radius = nRadius;
+}
+
+void particle::addPosition(vector2d nPosition)
+{
+	//std::lock_guard<std::shared_mutex> lock(mtx);
+	position += nPosition;
+}
+
+void particle::addVelocity(vector2d nVelocity)
+{
+	//std::lock_guard<std::shared_mutex> lock(mtx);
+	velocity += nVelocity;
+}
+
+void particle::addAcceleration(vector2d nAcceleration)
+{	
+	//std::lock_guard<std::shared_mutex> lock(mtx);
+	acceleration += nAcceleration;
+}
+
+void particle::addRadius(double nRadius)
+{
+	//std::lock_guard<std::shared_mutex> lock(mtx);
+	radius += nRadius;
+}
+
+vector2d particle::getPosition()
+{
+	return position;
+}
+
+vector2d particle::getVelocity()
+{
+	return velocity;
+}
+
+vector2d particle::getAcceleration()
+{
+	return acceleration;
+}
+
+double particle::getRadius()
+{
+	return radius;
 }
 
 // StaticPoint class constructor
@@ -113,10 +167,10 @@ vector2d staticLine::getNormal()
 }
 
 // Check if a particle collides with this static line
-double staticLine::checkParticleCollision(const particle& target)
+double staticLine::checkParticleCollision(particle* target)
 {
 	// Calculate vector from the line to the particle's position
-	vector2d v = {target.position.x - a->position.x, target.position.y - a->position.y};
+	vector2d v = {target -> getPosition() - a->position};
 
 	// Calculate direction vector of the line
 	vector2d direction = {b->position.getVector(a->position)};
@@ -137,5 +191,5 @@ double staticLine::checkParticleCollision(const particle& target)
 	}
 
 	// Return a distance greater than the sum of the particle's and line's radii if no collision
-	return target.radius + 1;
+	return target -> getRadius() + 1;
 }

@@ -6,7 +6,11 @@
 #include <string>
 #include <thread>
 #include <mutex>
+#include <shared_mutex>
 #include <memory>
+#include <unordered_map>
+
+#include <ThreadPool.h>
 
 #include "math.hpp"
 #include "utility.hpp"
@@ -48,9 +52,11 @@ class simulationContainer
 		int quadrantCapacity;
 		int particleCount;
 
-		std::vector<particle> particles;
+		std::vector<particle*> particles;
 		std::vector<staticPoint> staticPoints;
 		std::vector<staticLine> staticLines;
+
+		ThreadPool pool;
 
 		double nodeHalfDimension;
 		quadTree* nodeQuadTree;
