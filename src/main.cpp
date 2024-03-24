@@ -42,13 +42,13 @@ int main(int argc, char* args[])
 	menu* mainMenu = generateMenu(container);
 	grid mainGrid(vector2d(0, 0), 101, 101, 5, 5);
 
-	for (int x = -100; x < 100; ++x)
-	{
-		for (int y = -200; y < -180; ++y)
-		{
-			container -> addParticle(vector2d(x, y), 0.5);
-		}
-	}
+	// for (int x = -100; x < 100; ++x)
+	// {
+	// 	for (int y = -200; y < -190; ++y)
+	// 	{
+	// 		container -> addParticle(vector2d(x, y), 0.5);
+	// 	}
+	// }
 	
 	// Initialize SDL_Event for handling events
 	SDL_Event event;
@@ -198,8 +198,8 @@ int main(int argc, char* args[])
 
 		// Delay to maintain frame rate at monitor refresh rate
 		int frameTicks = SDL_GetTicks() - startTicks;
-		// if (frameTicks < 1000 / mainWindow.getRefreshRate())
-		// 	SDL_Delay(1000 / mainWindow.getRefreshRate() - frameTicks);
+		if (frameTicks < 1000 / mainWindow.getRefreshRate())
+			SDL_Delay(1000 / mainWindow.getRefreshRate() - frameTicks);
 		fpsFrame = SDL_GetTicks() - startTicks;
 		fps = (fpsFrame > 0) ? 1000.0f / fpsFrame : 0.0f;
 		avgFps += fps;
@@ -222,7 +222,7 @@ int main(int argc, char* args[])
 	 	// }
 	}
 	
-	system("pause");
+	//system("pause");
 	// Cleanup and quit SDL, SDL_image, and SDL_ttf libraries
 	mainWindow.cleanUp();
 	TTF_Quit();
@@ -235,7 +235,6 @@ menu* generateMenu(simulationContainer* container)
 {
 	menu* mainMenu = new menu(vector2d(16, 16));
 	tab* test1 = new tab(vector2d(0, 41), "main");
-	tab* test2 = new tab(vector2d(0, 41), "settings");
 
 	test1 -> insertElement(new tabDisplayI(container -> getParticleCount(), 1, "particles: "));
 	test1 -> insertElement(new tabDisplayI(&secFps, 1, "fps: "));

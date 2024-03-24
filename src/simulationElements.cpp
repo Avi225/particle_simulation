@@ -165,31 +165,3 @@ vector2d staticLine::getNormal()
 	vector2d normal = {(b->position.y - a->position.y), -(b->position.x - a->position.x)};
 	return normal;
 }
-
-// Check if a particle collides with this static line
-double staticLine::checkParticleCollision(particle* target)
-{
-	// Calculate vector from the line to the particle's position
-	vector2d v = {target -> getPosition() - a->position};
-
-	// Calculate direction vector of the line
-	vector2d direction = {b->position.getVector(a->position)};
-
-	vector2d normal = getNormal();
-
-	double length = a->position.distance(b->position);
-
-	// Calculate projection of the particle's position onto the line segment
-	double projection = (v.x * direction.x + v.y * direction.y) / length;
-
-	// Check if the projection falls within the line segment
-	if (projection >= 0 && projection <= length)
-	{
-		// Calculate distance between the particle and the line
-		double distance = aAbs(v.x * normal.x + v.y * normal.y) / length;
-		return distance;
-	}
-
-	// Return a distance greater than the sum of the particle's and line's radii if no collision
-	return target -> getRadius() + 1;
-}
