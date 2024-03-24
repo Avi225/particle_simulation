@@ -162,7 +162,7 @@ int main(int argc, char* args[])
 			    mainCamera.zoomCamera(0.3);
 			if(state[SDL_SCANCODE_Q])
 			    mainCamera.zoomCamera(-0.3);
-		}else
+		}else 
 		{
 			if(state[SDL_SCANCODE_A])
 			    mainCamera.moveCamera(vector2d(0.5, 0));
