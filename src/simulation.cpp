@@ -352,42 +352,7 @@ void simulationContainer::worker(quadTree* q)
 
 		    for (auto& l : staticLines)
 		    {
-		        // Calculate vector from the line to the particle's position
-				vector2d v = positionA.getVector(l.a -> position);
-
-				// Calculate direction vector of the line
-				vector2d direction = {l.b->position.getVector(l.a->position)};
-
-				vector2d normal = l.getNormal();
-
-				double length = l.a->position.distance(l.b->position);
-
-				// Calculate projection of the particle's position onto the line segment
-				double projection = (v.x * direction.x + v.y * direction.y) / length;
-				double lineOverlap = 0;
-
-				// Check if the projection falls within the line segment
-				if (projection >= 0 && projection <= length)
-					lineOverlap = aAbs(v.x * normal.x + v.y * normal.y) / length;
-				else
-					lineOverlap = radiusA + 1;
-
-				if (lineOverlap > radiusA)
-					continue;
-
-           		// Get the normal vector of the static line
-	            normal.normalize(1);
-
-	            // Adjust particle positions to resolve overlap
-	            positionA.x += (radiusA - lineOverlap + overlapGap) * normal.x;
-	            positionA.y += (radiusA - lineOverlap + overlapGap) * normal.y;
-
-	            // Calculate the dot product of particle velocity and normal vector
-	            double dot = 2 * (velocityA.x * normal.x + velocityA.y * normal.y);
-
-	            // Reflect particle velocity based on collision normal, restitution factor, and energy loss
-	            velocityA.x -= dot * normal.x * (1 - energyLoss) * restitution;
-	            velocityA.y -= dot * normal.y * (1 - energyLoss) * restitution;
+		    	
 		    }
 
     		a -> setPosition(positionA);

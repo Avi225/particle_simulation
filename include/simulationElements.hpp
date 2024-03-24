@@ -58,8 +58,7 @@ struct staticLine
 	void render(aCamera *camera);
 	void renderNormal(aCamera *camera);
 	vector2d getNormal();
-
-	double checkParticleCollision(particle* target);
+	
 	staticPoint* a;
 	staticPoint* b;
 };
