@@ -18,30 +18,46 @@
   </p>
 </div>
 
+https://github.com/Avi225/particle_simulation/assets/61160595/b71bdaf8-afc3-4e10-9dd8-658903743d84
 
-
-https://github.com/Avi225/particle_simulation/assets/61160595/cc33de0f-358e-4c9c-95f0-5d9101b566b7
-
+![](https://github.com/Avi225/particle_simulation/assets/61160595/7cb5c6e1-0f7c-4e8b-9080-6c7dc623160e)
 
 ## Instructions
 - Use `W`, `S`, `A` and `D` to move around
-- Hold `LSHIFT` to speed the movement up
 - Use `Q` and `E` to zoom in and out
+- Hold `LSHIFT` to speed up the movement and zooming
 - Drag `LMB` to spawn a particle
 - Hold `F` to spam particles at cursor
 - Press `SPACEBAR` to pause/resume simulation
 - Press `F11` to toggle Fullscreen
+- While the simulation is paused, press `Z` on a hovered quadrant to show debug properties of particles within
 
 
 
-## Building
-1. Clone the repo
-2. Requires SDL2, SDL2_image and SDL2_ttf
-3. Example build command with mingw64:
-   ```sh
-   g++ -c -g src/*.cpp -std=c++17 -O3 -Wall -I include -I C:/SDL2-w64/include && g++ *.o -o bin/x64/build/particles -s -L C:/SDL2-w64/lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
-   ```
-   
+## Building on windows
+
+
+2. Get SDL2:
+    - Download development versions for mingw of [SDL2](https://github.com/libsdl-org/SDL), [SDL2_image](https://github.com/libsdl-org/SDL_image) and [SDL2_ttf](https://github.com/libsdl-org/SDL_ttf)
+    - Extract and combine them into a memorable place, for example `C:/SDL2-w64`
+    
+3. Get g++ and mingw:
+    - Download [MSYS2](https://www.msys2.org/)
+    - Run `ucrt64.exe` located in the MSYS2 install folder, for example `C:\msys64`
+    - Enter `pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain` into the opened terminal
+    - When prompted to select packages, press `ENTER` to download all
+    - Add `C:\msys64\ucrt64\bin` and `C:\msys64\usr\bin` as entries to your `Path` system environmental variable, if not there already
+4. Build
+    - Clone this repository
+    - CD into `particle_simulation`
+    - Enter `g++ -c src/*.cpp -std=c++20 -O3 -Wall -I include -I C:/SDL2-w64/include` to build the .o files (adjust SDL2 path if needed)
+    - Enter `g++ -static-libgcc -static-libstdc++ *.o -o bin/x64/build/particles -mwindows -s -L C:/SDL2-w64/lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image` to link (adjust SDL2 path if needed too)
+5. Run
+    - The executable should be located in `bin/x64/build`, the source code includes this directory and required DLL files to run on any machine
+
+## Support
+If you got stuck at any point building the software, encountered a bug or have any other questions feel free to open a Github issue or send me a message.
+
 
 ## Goals for v0.2.0
 
