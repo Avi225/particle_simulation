@@ -39,14 +39,14 @@ https://github.com/Avi225/particle_simulation/assets/61160595/b71bdaf8-afc3-4e10
 
 2. Get SDL2:
     - Download development versions for mingw of [SDL2](https://github.com/libsdl-org/SDL), [SDL2_image](https://github.com/libsdl-org/SDL_image) and [SDL2_ttf](https://github.com/libsdl-org/SDL_ttf)
-    - Extract and combine them into a memorable place, for example `C:/SDL2-w64`
+    - Extract and combine them in a memorable place, for example `C:/SDL2-w64`
     
 3. Get g++ and mingw:
-    - Download [MSYS2](https://www.msys2.org/)
+    - Install [MSYS2](https://www.msys2.org/) following the setup wizard
     - Run `ucrt64.exe` located in the MSYS2 install folder, for example `C:\msys64`
     - Enter `pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain` into the opened terminal
     - When prompted to select packages, press `ENTER` to download all
-    - Add `C:\msys64\ucrt64\bin` and `C:\msys64\usr\bin` as entries to your `Path` system environmental variable, if not there already
+    - Add `C:\msys64\ucrt64\bin` and `C:\msys64\usr\bin` as entries to your `Path` system environmental variable, if not there already (adjust path if needed)
 4. Build
     - Clone this repository
     - CD into `particle_simulation`
