@@ -9,13 +9,15 @@
 struct tabElement
 {
 	virtual void render(aCamera* camera, vector2d position);
+	virtual void update();
 	int height;
 	vector2d adjustment;
+	std::string info;
 };
 
 struct tabText : public tabElement
 {
-	tabText(std::string nValue, int nSize);
+	tabText(std::string nValue, int nSize, std::string info);
 	void render(aCamera* camera, vector2d position);
 
 	std::string value;
@@ -30,7 +32,7 @@ struct tabBreak : public tabElement
 
 struct tabSliderD : public tabElement
 {
-	tabSliderD(double* nValue, double nMinValue, double nMaxValue);
+	tabSliderD(double* nValue, double nMinValue, double nMaxValue, std::string info);
 	void render(aCamera* camera, vector2d position);
 
 	double* value;
@@ -40,7 +42,7 @@ struct tabSliderD : public tabElement
 
 struct tabDisplayI : public tabElement
 {
-	tabDisplayI(int* nValue, int nSize, std::string nText);
+	tabDisplayI(int* nValue, int nSize, std::string nText, std::string info);
 	void render(aCamera* camera, vector2d position);
 
 	int* value;
@@ -50,7 +52,7 @@ struct tabDisplayI : public tabElement
 
 struct tabDisplayD : public tabElement
 {
-	tabDisplayD(double* nValue, int nSize, std::string nText);
+	tabDisplayD(double* nValue, int nSize, std::string nText, std::string info);
 	void render(aCamera* camera, vector2d position);
 
 	double* value;
@@ -74,6 +76,7 @@ private:
 	vector2d position;
 	int margin;
 	std::string name;
+	int state;
 };
 
 class menu
@@ -88,6 +91,6 @@ public:
 private:
 	vector2d position;
 	std::vector<tab*> tabs;
-	std::vector<std::vector<bool>> tabStates;
+
 	int margin;
 };

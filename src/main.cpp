@@ -40,7 +40,7 @@ int main(int argc, char* args[])
 	// Create simulation container and grid
 	simulationContainer* container = generateSimulationContainer();
 	menu* mainMenu = generateMenu(container);
-	grid mainGrid(vector2d(0, 0), 101, 101, 5, 5);
+	grid mainGrid(vector2d(0, 0), 501, 501, 20, 20);
 
 	// for (int x = -100; x < 100; ++x)
 	// {
@@ -87,7 +87,7 @@ int main(int argc, char* args[])
 					// Start placing a particle, this will be it's position
 					if (event.button.button == SDL_BUTTON_LEFT)
 					{		
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 20, 0);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 30, 0);
 					}
 					break;
 
@@ -95,7 +95,7 @@ int main(int argc, char* args[])
 					// Finish placing a particle, it's velocity will be pointing towards this point
 					if (event.button.button == SDL_BUTTON_LEFT)
 					{
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 20, 1);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 30, 1);
 					}
 					break;
 
@@ -180,7 +180,7 @@ int main(int argc, char* args[])
 		if(state[SDL_SCANCODE_F])
 		{
 			for (int i = 0; i < particleSpawnCount; ++i)
-				container -> addParticle(mainCamera.screenToWorld(vector2d(mouseX+double(i)/1000, mouseY+double(i)/1000)), 1);	
+				container -> addParticle(mainCamera.screenToWorld(vector2d(mouseX+double(i)/1000, mouseY+double(i)/1000)), 5);	
 		}
 
 		// Update camera parameters
