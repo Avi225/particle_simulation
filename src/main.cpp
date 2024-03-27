@@ -236,8 +236,8 @@ menu* generateMenu(simulationContainer* container)
 	menu* mainMenu = new menu(vector2d(16, 16));
 	tab* test1 = new tab(vector2d(0, 41), "main");
 
-	test1 -> insertElement(new tabDisplayI(container -> getParticleCount(), 1, "particles: "));
-	test1 -> insertElement(new tabDisplayI(&secFps, 1, "fps: "));
+	test1 -> insertElement(new tabDisplayI(container -> getParticleCount(), 1, "particles: ", "nothin"));
+	test1 -> insertElement(new tabDisplayI(&secFps, 1, "fps: ", "nothin"));
 
 	mainMenu -> insertTab(test1);
 	//mainMenu -> insertTab(test2);

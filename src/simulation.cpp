@@ -303,8 +303,8 @@ void simulationContainer::worker(quadTree* q)
                 velocityA.x -= (impulse / (areaA * density)) * collisionNormal.x * (1 - energyLoss);
                 velocityA.y -= (impulse / (areaA * density)) * collisionNormal.y * (1 - energyLoss);
                 
-                b->setVelocity(b->getVelocity().x + (impulse / (areaB * density)) * collisionNormal.x * (1 - energyLoss),
-                               b->getVelocity().y + (impulse / (areaB * density)) * collisionNormal.y * (1 - energyLoss));
+                b->setVelocity({b->getVelocity().x + (impulse / (areaB * density)) * collisionNormal.x * (1 - energyLoss),
+                               b->getVelocity().y + (impulse / (areaB * density)) * collisionNormal.y * (1 - energyLoss)});
 
                 b->setPosition(positionB);
             }

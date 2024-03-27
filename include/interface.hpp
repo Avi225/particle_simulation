@@ -91,6 +91,7 @@ public:
 private:
 	vector2d position;
 	std::vector<tab*> tabs;
+	std::vector<std::vector<bool>> tabStates;
 
 	int margin;
 };
