@@ -3,7 +3,7 @@
 void tabElement::render(aCamera* camera, vector2d position)
 {}
 
-tabText::tabText(std::string nValue, int nSize)
+tabText::tabText(std::string nValue, int nSize, std::string info)
 :value(nValue), size(nSize)
 {
 	height = 22*size;
@@ -25,7 +25,7 @@ tabBreak::tabBreak()
 void tabBreak::render(aCamera* camera, vector2d position)
 {}
 
-tabSliderD::tabSliderD(double* nValue, double nMinValue, double nMaxValue)
+tabSliderD::tabSliderD(double* nValue, double nMinValue, double nMaxValue, std::string info)
 : value(nValue), minValue(nMinValue), maxValue(nMaxValue)
 {
 	height = 22;
@@ -41,7 +41,7 @@ void tabSliderD::render(aCamera* camera, vector2d position)
 	camera -> renderDisc(pointPosition, 5, color, true);
 }
 
-tabDisplayI::tabDisplayI(int* nValue, int nSize, std::string nText)
+tabDisplayI::tabDisplayI(int* nValue, int nSize, std::string nText, std::string info)
 :value(nValue), size(nSize), text(nText)
 {
 	height = 22*size;
@@ -54,7 +54,7 @@ void tabDisplayI::render(aCamera* camera, vector2d position)
 	camera -> renderText(position, size, text + std::to_string(*value), color, 1);
 }
 
-tabDisplayD::tabDisplayD(double* nValue, int nSize, std::string nText)
+tabDisplayD::tabDisplayD(double* nValue, int nSize, std::string nText, std::string info)
 :value(nValue), size(nSize), text(nText)
 {
 	height = 22*size;

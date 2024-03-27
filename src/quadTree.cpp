@@ -50,20 +50,23 @@ void quadTree::split()
 	// Distribute particles among the quadrants
 	for (particle* p : particles)
 	{
-		if(p -> getPosition().x >= (boundary.center.x - p -> getRadius() * 2))
+		vector2d position = p -> getPosition();
+		double radius = p -> getRadius();
+		
+		if(position.x >= (boundary.center.x - radius * 2))
 		{
-			if(p -> getPosition().y >= (boundary.center.y - p -> getRadius() * 2))
+			if(position.y >= (boundary.center.y - radius * 2))
 				se -> particles.push_back(p);
 
-			if(p -> getPosition().y <= (boundary.center.y + p -> getRadius() * 2))
+			if(position.y <= (boundary.center.y + radius * 2))
 				ne -> particles.push_back(p);
 		}
-		if(p -> getPosition().x <= (boundary.center.x + p -> getRadius() * 2))
+		if(position.x <= (boundary.center.x + radius * 2))
 		{
-			if(p -> getPosition().y >= (boundary.center.y - p -> getRadius() * 2))
+			if(position.y >= (boundary.center.y - radius * 2))
 				sw -> particles.push_back(p);
 
-			if(p -> getPosition().y <= (boundary.center.y + p -> getRadius() * 2))
+			if(position.y <= (boundary.center.y + radius * 2))
 				nw -> particles.push_back(p);
 		}
 	}

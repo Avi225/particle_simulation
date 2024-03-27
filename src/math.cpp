@@ -35,18 +35,19 @@ double isqrt(double target)
 { 
 	const float th = 1.5F; 
 
-	float x2 = float(target) * 0.5F; 
-	float y = float(target); 
+    float x2 = static_cast<float>(target) * 0.5F; 
+    float y = static_cast<float>(target); 
 
-	long i = * (long *) &y; 
+    long i;
+    memcpy(&i, &y, sizeof(i));
 
-	i = 0x5f3759df - ( i >> 1 ); 
-	y = * (float *) &i; 
+    i = 0x5f3759df - ( i >> 1 ); 
+    memcpy(&y, &i, sizeof(i));
 
-	y = y * ( th - ( x2 * y * y ) ); 
-	y = y * ( th - ( x2 * y * y ) ); 
+    y = y * ( th - ( x2 * y * y ) ); 
+    //y = y * ( th - ( x2 * y * y ) ); // Optional second iteration for increased accuracy
 
- 	return double(y); 
+    return static_cast<double>(y); 
 }
 
 vector2d& vector2d::operator+=(vector2d const& a)
