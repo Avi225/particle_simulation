@@ -244,120 +244,198 @@ int* simulationContainer::getParticleCount()
     return &particleCount;
 }
 
-// Worker function for multithreaded collision detection
 void simulationContainer::worker(quadTree* q)
 {
-	double radiiSum = 0;
-    double overlapDistance = 0;
-    vector2d overlap = {0, 0};
-    double totalArea = 0;
-    double factorA = 0;
-    double factorB = 0;
-    double areaA = 0;
-    double areaB = 0;
-    double radiusA = 0;
-
-    vector2d positionA = {0, 0};
-    vector2d positionB = {0, 0};
-
-    vector2d velocityA = {0, 0};
-    vector2d velocityB = {0, 0};
-
-    vector2d collisionNormal = {0, 0};
-    vector2d velocity = {0, 0};
-    double relativeVelocity = 0;
-    double impulse = 0;
-   
     for (int ii = 0; ii < iterationSteps; ++ii)
     {
-    // Collision resolution for particles
-        
-    // Iterate over each particle in the current quad tree node	
-		for (particle* a : q->particles)
-		{
-    	positionA = a -> getPosition();
-    	velocityA = a -> getVelocity();
-    	radiusA = a -> getRadius();
+        for (particle* a : q->particles)
+        {
+            vector2d positionA = a->getPosition();
+            vector2d velocityA = a->getVelocity();
+            double radiusA = a->getRadius();
+            double areaA = a->getArea();
 
-		// Iterate over each particle in the current quad tree node (nested loop)
-			for (particle* b : q->particles)
-			{
-     
-	            // Calculate the sum of radii of the two particles
-	            radiiSum = radiusA + b -> getRadius();
+            for (particle* b : q->particles)
+            {
+                if (a == b) // Skip collision checks with the same particle
+                    continue;
 
-    			positionB = b -> getPosition();
+                vector2d positionB = b->getPosition();
+                double radiusB = b->getRadius();
+                double areaB = b->getArea();
 
-	            //Skip collision detection if particles are not close enough
-	            if(abs(positionA.x - positionB.x) >= radiiSum)
-	            	continue;
+                double radiiSum = radiusA + radiusB;
 
-	            if(abs(positionA.y - positionB.y) >= radiiSum)
-	            	continue;
+                if (abs(positionA.x - positionB.x) >= radiiSum ||
+                    abs(positionA.y - positionB.y) >= radiiSum) // Skip collision detection if particles are not close enough
+                    continue;
 
-	             //Avoid collision checks with the same particle
-	            if (a == b)
-		        	continue;
+                double distanceSquared = positionA.distanceSquared(positionB);
+                double radiiSumSquared = radiiSum * radiiSum;
+                if (distanceSquared > radiiSumSquared) // Skip collision detection if particles are not close enough
+                    continue;
 
-    			velocityB = b -> getVelocity();
+                double overlapDistance = radiiSum - std::sqrt(distanceSquared);
+                if (overlapDistance <= 0)
+                    continue;
 
-
-                // Calculate the distance by which the particles overlap
-                overlapDistance = radiiSum - positionA.distance(positionB);
-
-                if(overlapDistance <= 0)
-                	continue;
-                
-                // Calculate the direction vector of overlap
-                overlap = positionA.getVector(positionB);
-
+                vector2d overlap = positionA.getVector(positionB);
                 overlap.normalize(overlapDistance);
 
-                // Calculate the areas of the particles
-                areaA = a -> getArea();
-                areaB = b -> getArea();
+                double totalArea = areaA + areaB;
+                double factorA = areaA / totalArea;
+                double factorB = areaB / totalArea;
 
-                // Calculate the total area for overlap adjustment
-                totalArea = areaA + areaB;
+                positionA.x += overlap.x * factorB;
+                positionA.y += overlap.y * factorB;
+                
+                positionB.x -= overlap.x * factorA;
+                positionB.y -= overlap.y * factorA;
 
-                // Calculate factors for adjusting particle positions
-                factorA = areaA / totalArea;
-                factorB = areaB / totalArea;
-
-                // Adjust particle positions to resolve overlap
-                positionA += {overlap.x * factorB, overlap.y * factorB};
-                positionB -= {overlap.x * factorA, overlap.y * factorA};  
-
-                // Calculate the collision normal direction
-                collisionNormal = positionA.getVector(positionB);
+                vector2d collisionNormal = positionA.getVector(positionB);
                 collisionNormal.normalize(1);
 
-                // Calculate the relative velocity along the collision normal
-                velocity = velocityB - velocityA;
-                relativeVelocity = velocity.dot(collisionNormal);
+                vector2d velocity = b->getVelocity() - velocityA;
+                double relativeVelocity = velocity.dot(collisionNormal);
 
-                // Calculate the collision impulse for energy exchange
-                impulse = -((1 + restitution) * relativeVelocity) / (1 / (areaA * density) + 1 / (areaB * density));
+                double impulse = -((1 + restitution) * relativeVelocity) / (1 / (areaA * density) + 1 / (areaB * density));
 
-                // Update velocities based on collision impulse and energy loss
-                velocityA.x -= (impulse / (areaA * density) * collisionNormal.x * (1 - energyLoss));
-                velocityA.y -= (impulse / (areaA * density) * collisionNormal.y * (1 - energyLoss));
+                velocityA.x -= (impulse / (areaA * density)) * collisionNormal.x * (1 - energyLoss);
+                velocityA.y -= (impulse / (areaA * density)) * collisionNormal.y * (1 - energyLoss);
+                
+                b->setVelocity(b->getVelocity().x + (impulse / (areaB * density)) * collisionNormal.x * (1 - energyLoss),
+                               b->getVelocity().y + (impulse / (areaB * density)) * collisionNormal.y * (1 - energyLoss));
 
-                velocityB.x += (impulse / (areaB * density) * collisionNormal.x * (1 - energyLoss));
-                velocityB.y += (impulse / (areaB * density) * collisionNormal.y * (1 - energyLoss));
+                b->setPosition(positionB);
+            }
 
-                b -> setPosition(positionB);
-                b -> setVelocity(velocityB);
-		    }
-
-		    for (auto& l : staticLines)
-		    {
-		    	
-		    }
-
-    		a -> setPosition(positionA);
-    		a -> setVelocity(velocityA);
-		}
+            a->setPosition(positionA);
+            a->setVelocity(velocityA);
+        }
     }
 }
+
+
+// Worker function for multithreaded collision detection
+// void simulationContainer::worker(quadTree* q)
+// {
+// 	double radiiSum = 0;
+//     double overlapDistance = 0;
+//     vector2d overlap = {0, 0};
+//     double totalArea = 0;
+//     double factorA = 0;
+//     double factorB = 0;
+//     double areaA = 0;
+//     double areaB = 0;
+//     double radiusA = 0;
+//     double radiusB = 0;
+
+
+
+//     vector2d positionA = {0, 0};
+//     vector2d positionB = {0, 0};
+
+//     vector2d velocityA = {0, 0};
+//     vector2d velocityB = {0, 0};
+
+//     vector2d collisionNormal = {0, 0};
+//     vector2d velocity = {0, 0};
+//     double relativeVelocity = 0;
+//     double impulse = 0;
+   
+//     for (int ii = 0; ii < iterationSteps; ++ii)
+//     {
+//     // Collision resolution for particles
+        
+//     // Iterate over each particle in the current quad tree node	
+// 		for (particle* a : q->particles)
+// 		{
+//     	positionA = a -> getPosition();
+//     	velocityA = a -> getVelocity();
+//     	radiusA = a -> getRadius();
+//     	areaA = a -> getArea();
+
+// 		// Iterate over each particle in the current quad tree node (nested loop)
+// 			for (particle* b : q->particles)
+// 			{
+//      			positionB = b -> getPosition();
+//      			radiusB = b -> getRadius();
+	            
+// 	            // Calculate the sum of radii of the two particles
+// 	            radiiSum = radiusA + radiusB;
+
+// 	            //Skip collision detection if particles are not close enough
+// 	            if(abs(positionA.x - positionB.x) >= radiiSum)
+// 	            	continue;
+
+// 	            if(abs(positionA.y - positionB.y) >= radiiSum)
+// 	            	continue;
+
+// 	             //Avoid collision checks with the same particle
+// 	            if (a == b)
+// 		        	continue;
+
+// 	            //Skip collision detection if particles are not close enough
+// 	            if(positionA.distanceSquared(positionB) > radiiSum * radiiSum)
+// 	            	continue;
+
+//                 // Calculate the distance by which the particles overlap
+//                 overlapDistance = radiiSum - positionA.distance(positionB);
+
+//                 if(overlapDistance <= 0)
+//                 	continue;
+
+//     			velocityB = b -> getVelocity();
+
+                
+//                 // Calculate the direction vector of overlap
+//                 overlap = positionA.getVector(positionB);
+
+//                 overlap.normalize(overlapDistance);
+
+//                 // Calculate the area of the particle
+//                 areaB = b -> getArea();
+
+//                 // Calculate the total area for overlap adjustment
+//                 totalArea = areaA + areaB;
+
+//                 // Calculate factors for adjusting particle positions
+//                 factorA = areaA / totalArea;
+//                 factorB = areaB / totalArea;
+
+//                 // Adjust particle positions to resolve overlap
+//                 positionA += {overlap.x * factorB, overlap.y * factorB};
+//                 positionB -= {overlap.x * factorA, overlap.y * factorA};  
+
+//                 // Calculate the collision normal direction
+//                 collisionNormal = positionA.getVector(positionB);
+//                 collisionNormal.normalize(1);
+
+//                 // Calculate the relative velocity along the collision normal
+//                 velocity = velocityB - velocityA;
+//                 relativeVelocity = velocity.dot(collisionNormal);
+
+//                 // Calculate the collision impulse for energy exchange
+//                 impulse = -((1 + restitution) * relativeVelocity) / (1 / (areaA * density) + 1 / (areaB * density));
+
+//                 // Update velocities based on collision impulse and energy loss
+//                 velocityA.x -= (impulse / (areaA * density) * collisionNormal.x * (1 - energyLoss));
+//                 velocityA.y -= (impulse / (areaA * density) * collisionNormal.y * (1 - energyLoss));
+
+//                 velocityB.x += (impulse / (areaB * density) * collisionNormal.x * (1 - energyLoss));
+//                 velocityB.y += (impulse / (areaB * density) * collisionNormal.y * (1 - energyLoss));
+
+//                 b -> setPosition(positionB);
+//                 b -> setVelocity(velocityB);
+// 		    }
+// 		    // for (auto& l : staticLines)
+// 		    // {
+		    	
+// 		    // }
+
+//     		a -> setPosition(positionA);
+//     		a -> setVelocity(velocityA);
+// 		}
+//     }
+// }
 

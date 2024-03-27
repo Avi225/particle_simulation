@@ -31,6 +31,24 @@ double aAbs(double value)
 	return((value<0) ? -value : value);
 }
 
+double isqrt(double target) 
+{ 
+	const float th = 1.5F; 
+
+	float x2 = float(target) * 0.5F; 
+	float y = float(target); 
+
+	long i = * (long *) &y; 
+
+	i = 0x5f3759df - ( i >> 1 ); 
+	y = * (float *) &i; 
+
+	y = y * ( th - ( x2 * y * y ) ); 
+	y = y * ( th - ( x2 * y * y ) ); 
+
+ 	return double(y); 
+}
+
 vector2d& vector2d::operator+=(vector2d const& a)
 {
 	this->x += a.x;
@@ -157,9 +175,9 @@ void vector2d::print()
 
 void vector2d::normalize(double target)
 {
-	double i = sqrt(x * x + y * y);
-	x /= i;
-	y /= i;
+	double i = isqrt(x * x + y * y);
+	x *= i;
+	y *= i;
 	x *= target;
 	y *= target;
 }
@@ -175,7 +193,7 @@ void vector2d::normalizeSquared(double target)
 
 double vector2d::distance(vector2d target)
 {
-	return sqrt((x - target.x) * (x - target.x) + (y - target.y) * (y - target.y));
+	return 1 / isqrt((x - target.x) * (x - target.x) + (y - target.y) * (y - target.y));
 }
 
 double vector2d::distanceSquared(vector2d target)
@@ -212,4 +230,3 @@ double vector2d::getAngle()
 {
     return atan2(x, y)*(180/3.14159265358979323846);
 }
-

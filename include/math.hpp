@@ -13,6 +13,8 @@ double clamp(double x, double min);
 
 double aAbs(double value);
 
+double isqrt(double target);
+
 struct vector2d
 {
 	vector2d() {}
