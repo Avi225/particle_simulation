@@ -39,7 +39,7 @@ int main(int argc, char* args[])
 
 	// Create simulation container and grid
 	simulationContainer* container = generateSimulationContainer();
-	menu* mainMenu = generateMenu(container);
+	
 	grid mainGrid(vector2d(0, 0), 501, 501, 20, 20);
 
 	for (int x = -100; x < 100; ++x)
@@ -49,6 +49,8 @@ int main(int argc, char* args[])
 			container -> addParticle(vector2d(x, y), 1);
 		}
 	}
+
+	menu* mainMenu = generateMenu(container);
 	
 	// Initialize SDL_Event for handling events
 	SDL_Event event;
