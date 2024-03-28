@@ -56,7 +56,7 @@ class simulationContainer
 		std::vector<staticPoint> staticPoints;
 		std::vector<staticLine> staticLines;
 
-		ThreadPool pool;
+		ThreadPool* pool;
 
 		double nodeHalfDimension;
 		quadTree* nodeQuadTree;

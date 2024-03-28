@@ -9,7 +9,7 @@
 struct tabElement
 {
 	virtual void render(aCamera* camera, vector2d position);
-	virtual void update();
+	virtual void update() {}
 	int height;
 	vector2d adjustment;
 	std::string info;
@@ -86,7 +86,6 @@ public:
 	void insertTab(tab* nTab);
 	void updateTabs();
 	void render(aCamera* camera);
-	
 
 private:
 	vector2d position;

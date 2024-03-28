@@ -3,8 +3,10 @@
 
 // Constructor for the simulation container
 simulationContainer::simulationContainer()
-:pool(12)
+
 {
+	pool = new ThreadPool(12);
+
 	density = 1; // Universal density of each particle
 
 	restitution = 0.7; // Restitution coefficient for collisions (0: perfectly inelastic, 1: perfectly elastic)
@@ -15,7 +17,7 @@ simulationContainer::simulationContainer()
 
 	overlapGap = 0.01; // Small gap to resolve overlaps
 
-	running = true; // Flag indicating if simulation is running
+	running = false; // Flag indicating if simulation is running
 
 	quadrantCapacity = 192/2; // Maximum capacity of particles per quadrant in quadtree
 
@@ -25,7 +27,7 @@ simulationContainer::simulationContainer()
 
 	isPlacingParticle = false; // Flag for placing a particle
 
-	iterationSteps = 32; // Number of iteration steps for collision resolution
+	iterationSteps = 2; // Number of iteration steps for collision resolution
 }
 
 
@@ -53,51 +55,54 @@ void simulationContainer::update()
         // Apply friction force
         p -> setVelocity({p -> getVelocity().x + frictionX, p -> getVelocity().y + frictionY});
     }
-
-    nodeQuadTree->clear();
-
-    nodeQuadTree = new quadTree({vector2d(0, 0), nodeHalfDimension}, quadrantCapacity);
-
-    // Insert particles into the quadtree
-    for (size_t i = 0; i < particles.size(); ++i)
+    for (int i = 0; i < iterationSteps; ++i)
     {
-        // Remove particles outside the nodeHalfDimension bounds
-        if (particles[i] -> getPosition().x > nodeHalfDimension || particles[i] -> getPosition().x < -nodeHalfDimension || particles[i] -> getPosition().y > nodeHalfDimension || particles[i] -> getPosition().y < -nodeHalfDimension)
-        {
-        	delete particles[i];
-            particles.erase(particles.begin() + i);
-            continue;
-        }
 
-        nodeQuadTree->insertParticle(particles[i]);
-    }
+	    nodeQuadTree->clear();
 
-    nodeQuadTree->split();
+	    nodeQuadTree = new quadTree({vector2d(0, 0), nodeHalfDimension}, quadrantCapacity);
 
-    // Get leaves of the quadtree
-    std::vector<quadTree*> quads;
-    nodeQuadTree->getLeaves(quads);
+	    // Insert particles into the quadtree
+	    for (size_t i = 0; i < particles.size(); ++i)
+	    {
+	        // Remove particles outside the nodeHalfDimension bounds
+	        if (particles[i] -> getPosition().x > nodeHalfDimension || particles[i] -> getPosition().x < -nodeHalfDimension || particles[i] -> getPosition().y > nodeHalfDimension || particles[i] -> getPosition().y < -nodeHalfDimension)
+	        {
+	        	delete particles[i];
+	            particles.erase(particles.begin() + i);
+	            continue;
+	        }
 
-    std::unordered_map<int, std::future<bool>> tasks;
-	
+	        nodeQuadTree->insertParticle(particles[i]);
+	    }
 
-    for (size_t i = 0; i < quads.size(); ++i)
-    {
-        // Skip empty quadrants
-        if (quads[i]->particles.size() == 0)
-            continue; 
- 
-        tasks[i] = pool.enqueue([this, &quads, i](){ 
-	        worker(quads[i]);
-	        return true;
-    	});   
-        //workers.push_back(std::thread(&simulationContainer::worker, this, q));
-    }
+	    nodeQuadTree->split();
 
-    for (auto& [key, task]: tasks)
-    {
-    	task.get();
-    }
+	    // Get leaves of the quadtree
+	    std::vector<quadTree*> quads;
+	    nodeQuadTree->getLeaves(quads);
+
+	    std::unordered_map<int, std::future<bool>> tasks;
+		
+
+	    for (size_t i = 0; i < quads.size(); ++i)
+	    {
+	        // Skip empty quadrants
+	        if (quads[i]->particles.size() == 0)
+	            continue; 
+	 
+	        tasks[i] = pool -> enqueue([this, &quads, i](){ 
+		        worker(quads[i]);
+		        return true;
+	    	});   
+	        //workers.push_back(std::thread(&simulationContainer::worker, this, q));
+	    }
+
+	    for (auto& [key, task]: tasks)
+	    {
+	    	task.get();
+	    }
+	}
 }
 
 
@@ -245,74 +250,72 @@ int* simulationContainer::getParticleCount()
 }
 
 void simulationContainer::worker(quadTree* q)
-{
-    for (int ii = 0; ii < iterationSteps; ++ii)
+{  
+    for (particle* a : q->particles)
     {
-        for (particle* a : q->particles)
+        vector2d positionA = a->getPosition();
+        vector2d velocityA = a->getVelocity();
+        double radiusA = a->getRadius();
+        double areaA = a->getArea();
+
+        for (particle* b : q->particles)
         {
-            vector2d positionA = a->getPosition();
-            vector2d velocityA = a->getVelocity();
-            double radiusA = a->getRadius();
-            double areaA = a->getArea();
+            if (a == b) // Skip collision checks with the same particle
+                continue;
 
-            for (particle* b : q->particles)
-            {
-                if (a == b) // Skip collision checks with the same particle
-                    continue;
+            vector2d positionB = b->getPosition();
 
-                vector2d positionB = b->getPosition();
-                double radiusB = b->getRadius();
-                double areaB = b->getArea();
+            double radiiSum = radiusA + b->getRadius();
 
-                double radiiSum = radiusA + radiusB;
+            if (abs(positionA.x - positionB.x) >= radiiSum ||
+                abs(positionA.y - positionB.y) >= radiiSum) // Skip collision detection if particles are not close enough
+                continue;
 
-                if (abs(positionA.x - positionB.x) >= radiiSum ||
-                    abs(positionA.y - positionB.y) >= radiiSum) // Skip collision detection if particles are not close enough
-                    continue;
+            double distanceSquared = positionA.distanceSquared(positionB);
+            double radiiSumSquared = radiiSum * radiiSum;
+            if (distanceSquared > radiiSumSquared) // Skip collision detection if particles are not close enough
+                continue;
 
-                double distanceSquared = positionA.distanceSquared(positionB);
-                double radiiSumSquared = radiiSum * radiiSum;
-                if (distanceSquared > radiiSumSquared) // Skip collision detection if particles are not close enough
-                    continue;
+            double overlapDistance = radiiSum - std::sqrt(distanceSquared);
+            if (overlapDistance <= 0)
+                continue;
 
-                double overlapDistance = radiiSum - std::sqrt(distanceSquared);
-                if (overlapDistance <= 0)
-                    continue;
+            vector2d overlap = positionA.getVector(positionB);
+            overlap.normalize(overlapDistance);
 
-                vector2d overlap = positionA.getVector(positionB);
-                overlap.normalize(overlapDistance);
+            double areaB = b->getArea();
 
-                double totalArea = areaA + areaB;
-                double factorA = areaA / totalArea;
-                double factorB = areaB / totalArea;
+            double totalArea = areaA + areaB;
+            double factorA = areaA / totalArea;
+            double factorB = areaB / totalArea;
 
-                positionA.x += overlap.x * factorB;
-                positionA.y += overlap.y * factorB;
-                
-                positionB.x -= overlap.x * factorA;
-                positionB.y -= overlap.y * factorA;
+            positionA.x += overlap.x * factorB;
+            positionA.y += overlap.y * factorB;
+            
+            positionB.x -= overlap.x * factorA;
+            positionB.y -= overlap.y * factorA;
 
-                vector2d collisionNormal = positionA.getVector(positionB);
-                collisionNormal.normalize(1);
+            vector2d collisionNormal = positionA.getVector(positionB);
+            collisionNormal.normalize(1);
 
-                vector2d velocity = b->getVelocity() - velocityA;
-                double relativeVelocity = velocity.dot(collisionNormal);
+            vector2d velocity = b->getVelocity() - velocityA;
+            double relativeVelocity = velocity.dot(collisionNormal);
 
-                double impulse = -((1 + restitution) * relativeVelocity) / (1 / (areaA * density) + 1 / (areaB * density));
+            double impulse = -((1 + restitution) * relativeVelocity) / (1 / (areaA * density) + 1 / (areaB * density));
 
-                velocityA.x -= (impulse / (areaA * density)) * collisionNormal.x * (1 - energyLoss);
-                velocityA.y -= (impulse / (areaA * density)) * collisionNormal.y * (1 - energyLoss);
-                
-                b->setVelocity({b->getVelocity().x + (impulse / (areaB * density)) * collisionNormal.x * (1 - energyLoss),
-                               b->getVelocity().y + (impulse / (areaB * density)) * collisionNormal.y * (1 - energyLoss)});
+            velocityA.x -= (impulse / (areaA * density)) * collisionNormal.x * (1 - energyLoss);
+            velocityA.y -= (impulse / (areaA * density)) * collisionNormal.y * (1 - energyLoss);
+            
+            b->setVelocity({b->getVelocity().x + (impulse / (areaB * density)) * collisionNormal.x * (1 - energyLoss),
+                           b->getVelocity().y + (impulse / (areaB * density)) * collisionNormal.y * (1 - energyLoss)});
 
-                b->setPosition(positionB);
-            }
-
-            a->setPosition(positionA);
-            a->setVelocity(velocityA);
+            b->setPosition(positionB);
         }
+
+        a->setPosition(positionA);
+        a->setVelocity(velocityA);
     }
+    
 }
 
 

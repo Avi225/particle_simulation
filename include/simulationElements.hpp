@@ -18,22 +18,18 @@ public:
 
 	void render(aCamera *camera);
 	void renderDebug(aCamera *camera);
-	double getArea();
+	
+	inline double getArea() {return 3.14159265359 * radius * radius;}
 
-	void setPosition(vector2d nPosition);
-	void setVelocity(vector2d nVelocity);
-	void setAcceleration(vector2d nAcceleration);
-	void setRadius(double nRadius);
+	inline void setPosition(vector2d nPosition) {position = nPosition;}
+	inline void setVelocity(vector2d nVelocity) {velocity = nVelocity;}
+	inline void setAcceleration(vector2d nAcceleration) {acceleration = nAcceleration;}
+	inline void setRadius(double nRadius) {radius = nRadius;}
 
-	void addPosition(vector2d nPosition);
-	void addVelocity(vector2d nVelocity);
-	void addAcceleration(vector2d nAcceleration);
-	void addRadius(double nRadius);
-
-	vector2d getPosition();
-	vector2d getVelocity();
-	vector2d getAcceleration();
-	double getRadius();
+	inline vector2d getPosition() {return position;}
+	inline vector2d getVelocity() {return velocity;}
+	inline vector2d getAcceleration() {return acceleration;}
+	inline double getRadius() {return radius;}
 
 private:
 

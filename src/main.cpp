@@ -39,16 +39,18 @@ int main(int argc, char* args[])
 
 	// Create simulation container and grid
 	simulationContainer* container = generateSimulationContainer();
-	menu* mainMenu = generateMenu(container);
+	
 	grid mainGrid(vector2d(0, 0), 501, 501, 20, 20);
 
 	// for (int x = -100; x < 100; ++x)
 	// {
-	// 	for (int y = -200; y < -190; ++y)
+	// 	for (int y = -200; y < -160; ++y)
 	// 	{
-	// 		container -> addParticle(vector2d(x, y), 0.5);
+	// 		container -> addParticle(vector2d(x, y), 1);
 	// 	}
 	// }
+
+	menu* mainMenu = generateMenu(container);
 	
 	// Initialize SDL_Event for handling events
 	SDL_Event event;
@@ -87,7 +89,7 @@ int main(int argc, char* args[])
 					// Start placing a particle, this will be it's position
 					if (event.button.button == SDL_BUTTON_LEFT)
 					{		
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 30, 0);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 50, 0);
 					}
 					break;
 
@@ -95,7 +97,7 @@ int main(int argc, char* args[])
 					// Finish placing a particle, it's velocity will be pointing towards this point
 					if (event.button.button == SDL_BUTTON_LEFT)
 					{
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 30, 1);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 50, 1);
 					}
 					break;
 
@@ -189,7 +191,12 @@ int main(int argc, char* args[])
     	
     	//Update simulation container
 		if(container -> getRunning())
+		{
 			container -> update();
+			s--;
+			totalFpsAvg += fps;
+			totalFrames++;
+		}
 
 		//Update main menu
 		mainMenu -> updateTabs();
@@ -203,9 +210,8 @@ int main(int argc, char* args[])
 		fpsFrame = SDL_GetTicks() - startTicks;
 		fps = (fpsFrame > 0) ? 1000.0f / fpsFrame : 0.0f;
 		avgFps += fps;
-		totalFpsAvg += fps;
-		totalFrames++;
 		frames++;
+
 		if(frames >= fps)
 		{
 			secFps = int(round(avgFps /= frames));
@@ -213,16 +219,13 @@ int main(int argc, char* args[])
 			frames = 0;
 		}
 
-
-		s--;
 		// if(s <= 0)
 	 	// {
 	 	// 	printf("%f fps average\n", totalFpsAvg/totalFrames);
+	 	// 	system("pause");
 	 	// 	break;
 	 	// }
 	}
-	
-	//system("pause");
 	// Cleanup and quit SDL, SDL_image, and SDL_ttf libraries
 	mainWindow.cleanUp();
 	TTF_Quit();
@@ -236,8 +239,8 @@ menu* generateMenu(simulationContainer* container)
 	menu* mainMenu = new menu(vector2d(16, 16));
 	tab* test1 = new tab(vector2d(0, 41), "main");
 
-	test1 -> insertElement(new tabDisplayI(container -> getParticleCount(), 1, "particles: ", "nothin"));
-	test1 -> insertElement(new tabDisplayI(&secFps, 1, "fps: ", "nothin"));
+	test1 -> insertElement(new tabDisplayI(container -> getParticleCount(), 1, "particles: ", "nth"));
+	test1 -> insertElement(new tabDisplayI(&secFps, 1, "fps: ", "nth"));
 
 	mainMenu -> insertTab(test1);
 	//mainMenu -> insertTab(test2);
