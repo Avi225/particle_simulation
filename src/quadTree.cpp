@@ -20,7 +20,7 @@ quadTree::quadTree(quadTreeBox nBoundary, int nCapacity)
 void quadTree::split()
 {
 	// Check if splitting is necessary
-	if((int(particles.size()) <= capacity) || (boundary.halfDimension/2 <= 1))
+	if((int(particles.size()) <= capacity) || (boundary.halfDimension/2 <= 2))
 		return;
 
 	// Define the boundaries of the quadrants

@@ -42,13 +42,13 @@ int main(int argc, char* args[])
 	
 	grid mainGrid(vector2d(0, 0), 501, 501, 20, 20);
 
-	for (int x = -100; x < 100; ++x)
-	{
-		for (int y = -200; y < -160; ++y)
-		{
-			container -> addParticle(vector2d(x, y), 1);
-		}
-	}
+	// for (int x = -100; x < 100; ++x)
+	// {
+	// 	for (int y = -200; y < -160; ++y)
+	// 	{
+	// 		container -> addParticle(vector2d(x, y), 1);
+	// 	}
+	// }
 
 	menu* mainMenu = generateMenu(container);
 	
@@ -89,7 +89,7 @@ int main(int argc, char* args[])
 					// Start placing a particle, this will be it's position
 					if (event.button.button == SDL_BUTTON_LEFT)
 					{		
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 30, 0);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 50, 0);
 					}
 					break;
 
@@ -97,7 +97,7 @@ int main(int argc, char* args[])
 					// Finish placing a particle, it's velocity will be pointing towards this point
 					if (event.button.button == SDL_BUTTON_LEFT)
 					{
-						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 30, 1);
+						container -> placeParticle(mainCamera.screenToWorld(vector2d(mouseX, mouseY)), 50, 1);
 					}
 					break;
 
@@ -219,12 +219,12 @@ int main(int argc, char* args[])
 			frames = 0;
 		}
 
-		if(s <= 0)
-	 	{
-	 		printf("%f fps average\n", totalFpsAvg/totalFrames);
-	 		system("pause");
-	 		break;
-	 	}
+		// if(s <= 0)
+	 	// {
+	 	// 	printf("%f fps average\n", totalFpsAvg/totalFrames);
+	 	// 	system("pause");
+	 	// 	break;
+	 	// }
 	}
 	// Cleanup and quit SDL, SDL_image, and SDL_ttf libraries
 	mainWindow.cleanUp();
