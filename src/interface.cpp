@@ -127,38 +127,46 @@ void menu::updateTabs()
 	int x, y;
 	SDL_Rect rect;
 
-	bool mouseOver = false;
+	bool hover = false;
 	bool LMBdown = false;
 
 	if(SDL_GetMouseState(&x,&y) & SDL_BUTTON_LMASK)
 		LMBdown = true;
 
 
-	for(int i = 0; i < int(tabs.size()); ++i)
+	for(auto const& [name, state] : tabStates)
 	{
 		rect =
 			{
-				int(position.x)+i*104,
-				int(position.y),
+				int(tabs[name].x)+i*104,
+				int(tabs[name].y),
 				96,
 				33
 			};
-		mouseOver = x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
-
-		if(tabStates[i][1] && !LMBdown && mouseOver)
+		hover = x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
+		switch(state)
 		{
-			for(int ii = 0; ii < int(tabs.size()); ++ii)
-			{	
-				if(ii==i)
-					tabStates[ii][2] = !tabStates[ii][2];
-				else
-					tabStates[ii][2] = false;	
-			}
-		}
+		case 0:
+			state = (hover) ? ((LMBdown) ? 4 : 1) : 0;
+			break;
+		case 1:
+			state = (hover) ? ((LMBdown) ? 4 : 1) : 0;
+			break;
+		case 2:
+			state = (LMBdown) ? 2 : 0;
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			break;
+		case 6:
+			break;
+		case 7:	
+			break;
 
-        tabStates[i][0] = (mouseOver) ? true : false;
-        tabStates[i][1] = (tabStates[i][0] && LMBdown) ? true : false;
-        printf("%i, %i, %i || ", int(tabStates[i][0]), int(tabStates[i][1]), int(tabStates[i][2]));
+		}
    		
  
 	}

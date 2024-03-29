@@ -89,8 +89,9 @@ public:
 
 private:
 	vector2d position;
-	std::vector<tab*> tabs;
-	std::vector<std::vector<bool>> tabStates;
+	std::map<std::string, tab*> tabs;
+
+	std::map<std::string, int> tabStates; // 0 - idle, 1 - hovered, 2 - pressed, 
 
 	int margin;
 };
