@@ -46,6 +46,7 @@ struct tabSliderD : public tabElement
 {
 	tabSliderD(double* nValue, double nMinValue, double nMaxValue, std::string info);
 	void render(aCamera* camera, vector2d position);
+	void update();
 
 	double* value;
 	double minValue;

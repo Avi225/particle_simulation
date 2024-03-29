@@ -41,6 +41,17 @@ void tabSliderD::render(aCamera* camera, vector2d position)
 	camera -> renderDisc(pointPosition, 5, color, true);
 }
 
+void tabSliderD::update()
+{
+	int x, y;
+
+	bool LMBdown = false;
+
+	if(SDL_GetMouseState(&x,&y) & SDL_BUTTON_LMASK)
+		LMBdown = true;
+
+}
+
 tabDisplayI::tabDisplayI(int* nValue, int nSize, std::string nText, std::string info)
 :value(nValue), size(nSize), text(nText)
 {
@@ -150,13 +161,23 @@ void menu::updateTabs()
 
 		bool mouseOver = (x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h);
 
-		tab -> tabState.pressed = (tab -> tabState.hovered && LMBdown && mouseOver) ? true : false;
+		
 		tab -> tabState.selected = (tab -> tabState.pressed && mouseOver && !LMBdown) ? !tab -> tabState.selected : tab -> tabState.selected;
-		tab -> tabState.hovered = ((mouseOver && !LMBdown) || tab -> tabState.pressed);
+		tab -> tabState.pressed = (LMBdown && tab -> tabState.hovered) ? true : false;
+		tab -> tabState.hovered = (mouseOver && !LMBdown) || tab -> tabState.pressed;
+
+		if(tab -> tabState.selected)
+		{
+			for(auto const& [n, t] : tabs)
+				t -> tabState.selected = false;
+			tab -> tabState.selected = true;
+		}
+
+		//printf(" %d %d %d ||", tab -> tabState.hovered, tab -> tabState.pressed, tab -> tabState.selected);
 		
 		tabPosition++;
 	}
-	//printf("\n\n");
+	//printf("\n");
 }
 
 void menu::render(aCamera* camera)
@@ -175,7 +196,9 @@ void menu::render(aCamera* camera)
 
 		camera -> renderRect(rect, color, true);
 		SDL_Color color = {255, 255, 255, 255};
-		color.a += (tab -> tabState.hovered) ? -32 : ((tab -> tabState.pressed) ? -64 : ((tab -> tabState.selected) ? -86 : 0));
+		color.a -= tab -> tabState.hovered * 64;
+		color.a -= tab -> tabState.pressed * 64;
+		color.a -= tab -> tabState.selected * 64;
 
 		camera -> renderText(vector2d(position.x+tabPosition*104+48-(tab -> name.length()*10/2), position.y+4), 1, tab -> name, color, true);
 
