@@ -104,11 +104,15 @@ void tab::render(aCamera* camera, vector2d globalPosition)
 		elementPosition.y += elements[i] -> height;
 	}
 }
-
-std::string tab::getName()
+ 
+state::state()
+:hovered(false), pressed(false), selected(false), button(false)
 {
-	return name;
 }
+
+state::state(bool nHovered, bool nPressed, bool nSelected, bool nButton)
+:hovered(nHovered), pressed(nPressed), selected(nSelected), button(nButton)
+{}
 
 menu::menu(vector2d nPosition)
 : position(nPosition)
@@ -118,8 +122,7 @@ menu::menu(vector2d nPosition)
 
 void menu::insertTab(tab* nTab)
 {
-	tabs.push_back(nTab);
-	tabStates.push_back({false, false, true});
+	tabs[nTab -> name] = nTab;
 }
 
 void menu::updateTabs()
@@ -127,79 +130,59 @@ void menu::updateTabs()
 	int x, y;
 	SDL_Rect rect;
 
-	bool hover = false;
 	bool LMBdown = false;
+	int tabPosition = 0;
+
 
 	if(SDL_GetMouseState(&x,&y) & SDL_BUTTON_LMASK)
 		LMBdown = true;
 
 
-	for(auto const& [name, state] : tabStates)
+	for(auto const& [name, tab] : tabs)
 	{
 		rect =
 			{
-				int(tabs[name].x)+i*104,
-				int(tabs[name].y),
+				int(position.x)+tabPosition*104,
+				int(position.y),
 				96,
 				33
 			};
-		hover = x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
-		switch(state)
-		{
-		case 0:
-			state = (hover) ? ((LMBdown) ? 4 : 1) : 0;
-			break;
-		case 1:
-			state = (hover) ? ((LMBdown) ? 4 : 1) : 0;
-			break;
-		case 2:
-			state = (LMBdown) ? 2 : 0;
-			break;
-		case 3:
-			break;
-		case 4:
-			break;
-		case 5:
-			break;
-		case 6:
-			break;
-		case 7:	
-			break;
 
-		}
-   		
- 
+		bool mouseOver = (x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h);
+
+		tab -> tabState.pressed = (tab -> tabState.hovered && LMBdown && mouseOver) ? true : false;
+		tab -> tabState.selected = (tab -> tabState.pressed && mouseOver && !LMBdown) ? !tab -> tabState.selected : tab -> tabState.selected;
+		tab -> tabState.hovered = ((mouseOver && !LMBdown) || tab -> tabState.pressed);
+		
+		tabPosition++;
 	}
 	//printf("\n\n");
 }
 
 void menu::render(aCamera* camera)
 {
-	SDL_Color color = {0, 0, 0, 64};
-	for(int i = 0; i < int(tabs.size()); ++i)
+	SDL_Color color = {0, 0, 0, 128};
+	int tabPosition = 0;
+	for(auto const& [name, tab] : tabs)
 	{
 		SDL_Rect rect =
 		{
-			int(position.x)+i*104,
+			int(position.x)+tabPosition*104,
 			int(position.y),
 			96,
 			33
 		};
 
-		color = {0, 0, 0, 0};
-		color.a = 128+48*(tabStates[i][0]+tabStates[i][1]);
-		if(tabStates[i][2])
-			color = {0, 0, 0, 223};
-
 		camera -> renderRect(rect, color, true);
+		SDL_Color color = {255, 255, 255, 255};
+		color.a += (tab -> tabState.hovered) ? -32 : ((tab -> tabState.pressed) ? -64 : ((tab -> tabState.selected) ? -86 : 0));
 
-		color = {255, 255, 255, 255};
-		if(tabStates[i][2])
-			color = {255, 255, 255, 255};
+		camera -> renderText(vector2d(position.x+tabPosition*104+48-(tab -> name.length()*10/2), position.y+4), 1, tab -> name, color, true);
 
-		camera -> renderText(vector2d(position.x+i*104+48-(tabs[i]->getName().length()*10/2), position.y+4), 1, tabs[i]->getName(), color, true);
-		if(tabStates[i][2])
-			tabs[i] -> render(camera, position);
+		if(tab -> tabState.selected)
+			tab -> render(camera, position);
+
+		tabPosition++;
 	}
 }
 

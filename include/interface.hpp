@@ -5,6 +5,18 @@
 
 #include <vector>
 #include <string>
+#include <map>
+
+struct state
+{
+	state();
+	state(bool nHovered, bool nPressed, bool nSelected, bool nButton);
+
+	bool hovered;
+	bool pressed;
+	bool selected;
+	bool button;
+};
 
 struct tabElement
 {
@@ -60,23 +72,19 @@ struct tabDisplayD : public tabElement
 	std::string text;
 };
 
-class tab
+struct tab
 {
-public:
 	tab(vector2d nPosition, std::string nName);
 
 	void insertElement(tabElement* element);
 	
 	void render(aCamera* camera, vector2d globalPosition);
 
-	std::string getName();
-
-private:
 	std::vector<tabElement*> elements;
 	vector2d position;
 	int margin;
 	std::string name;
-	int state;
+	state tabState;
 };
 
 class menu
@@ -90,8 +98,6 @@ public:
 private:
 	vector2d position;
 	std::map<std::string, tab*> tabs;
-
-	std::map<std::string, int> tabStates; // 0 - idle, 1 - hovered, 2 - pressed, 
 
 	int margin;
 };
