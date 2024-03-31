@@ -7,6 +7,8 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_thread.h>
 
+#include <ThreadPool.h>
+
 #include "math.hpp"
 #include "aWindow.hpp"
 #include "aCamera.hpp"
@@ -17,6 +19,7 @@
 menu* generateMenu(simulationContainer* container);
 simulationContainer* generateSimulationContainer();
 void renderScene(aCamera* camera, aWindow* window, grid* mainGrid, simulationContainer* container, menu* mainMenu);
+void simulationWorker(simulationContainer* container);
 
 double fps = 0;
 double avgFps = 0;
@@ -39,6 +42,10 @@ int main(int argc, char* args[])
 
 	// Create simulation container and grid
 	simulationContainer* container = generateSimulationContainer();
+
+	ThreadPool pool(1);
+
+	pool.enqueue(simulationWorker, container);
 	
 	grid mainGrid(vector2d(0, 0), 501, 501, 20, 20);
 
@@ -190,13 +197,11 @@ int main(int argc, char* args[])
 		mainCamera.updatePosition();
     	
     	//Update simulation container
-		if(container -> getRunning())
-		{
-			container -> update();
-			s--;
-			totalFpsAvg += fps;
-			totalFrames++;
-		}
+		
+		s--;
+		totalFpsAvg += fps;
+		totalFrames++;
+		
 
 		//Update main menu
 		mainMenu -> updateTabs();
@@ -284,3 +289,9 @@ void renderScene(aCamera* camera, aWindow* window, grid* mainGrid, simulationCon
 	window -> display();
 }
 
+void simulationWorker(simulationContainer* container)
+{
+	while(true)
+		if(container -> getRunning())
+			container -> update();
+}

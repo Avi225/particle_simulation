@@ -45,7 +45,7 @@ double isqrt(double target)
     memcpy(&y, &i, sizeof(i));
 
     y = y * ( th - ( x2 * y * y ) ); 
-    //y = y * ( th - ( x2 * y * y ) ); // Optional second iteration for increased accuracy
+    y = y * ( th - ( x2 * y * y ) ); // Optional second iteration for increased accuracy
 
     return static_cast<double>(y); 
 }

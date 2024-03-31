@@ -39,7 +39,7 @@ private:
 
 	double radius;
 
-	std::shared_mutex mtx;
+	//std::shared_mutex mtx;
 };
 
 struct staticPoint
