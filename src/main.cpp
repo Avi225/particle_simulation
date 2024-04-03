@@ -42,10 +42,6 @@ int main(int argc, char* args[])
 
 	// Create simulation container and grid
 	simulationContainer* container = generateSimulationContainer();
-
-	ThreadPool pool(1);
-
-	pool.enqueue(simulationWorker, container);
 	
 	grid mainGrid(vector2d(0, 0), 501, 501, 20, 20);
 
@@ -197,10 +193,13 @@ int main(int argc, char* args[])
 		mainCamera.updatePosition();
     	
     	//Update simulation container
-		
-		s--;
-		totalFpsAvg += fps;
-		totalFrames++;
+		if(container -> getRunning())
+		{
+			container -> update();
+			s--;
+			totalFpsAvg += fps;
+			totalFrames++;
+		}
 		
 
 		//Update main menu
@@ -287,11 +286,4 @@ void renderScene(aCamera* camera, aWindow* window, grid* mainGrid, simulationCon
 	mainMenu -> render(camera);
 
 	window -> display();
-}
-
-void simulationWorker(simulationContainer* container)
-{
-	while(true)
-		if(container -> getRunning())
-			container -> update();
 }
