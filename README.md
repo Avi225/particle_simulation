@@ -12,6 +12,8 @@
   <p align="center">
     Simple particle simulation made in C++ with SDL2
     <br>
+    Including Quad-tree optimalization and realistic energy transfer simulation
+    <br>
     <a href="https://github.com/Avi225/particle_simulation/issues">Report Bug</a>
     ·
     <a href="https://github.com/Avi225/particle_simulation/issues">Request Feature</a>
