@@ -1,3 +1,4 @@
+#include <cstring>
 #include "math.hpp"
 
 double mapRange(double value, double inMin, double inMax, double outMin, double outMax)
