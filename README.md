@@ -1,3 +1,4 @@
+
 <a name="readme-top"></a>
 
 <!-- PROJECT LOGO -->
@@ -12,7 +13,7 @@
   <p align="center">
     Simple particle simulation made in C++ with SDL2
     <br>
-    Including Quad-tree optimalization and realistic energy transfer simulation
+    Including quad-tree optimalization and realistic energy transfer simulation
     <br>
     <a href="https://github.com/Avi225/particle_simulation/issues">Report Bug</a>
     ·
@@ -28,44 +29,48 @@ https://github.com/Avi225/particle_simulation/assets/61160595/b71bdaf8-afc3-4e10
 - Use `W`, `S`, `A` and `D` to move around
 - Use `Q` and `E` to zoom in and out
 - Hold `LSHIFT` to speed up the movement and zooming
-- Drag `LMB` to spawn a particle
-- Hold `F` to spam particles at cursor
+- Drag `LMB` to place an accelerated particle
+- Hold `F` to spawn particles at cursor
+- Use `SCROLLWHEEL` to increase/decrease the amount of spawned particles
 - Press `SPACEBAR` to pause/resume simulation
 - Press `F11` to toggle Fullscreen
-- While the simulation is paused, press `Z` on a hovered quadrant to show debug properties of particles within
+- While the simulation is paused, press `Z` to show debug properties of particles within the hovered quadrant
 
 
 
-## Building on windows
+## Building
+### On Windows
 
-
-2. Get SDL2:
-    - Download development versions for mingw of [SDL2](https://github.com/libsdl-org/SDL), [SDL2_image](https://github.com/libsdl-org/SDL_image) and [SDL2_ttf](https://github.com/libsdl-org/SDL_ttf)
-    - Extract the contents of `x86_64-w64-mingw32` for all the libraries and combine them in a memorable place, for example `C:/SDL2-w64`
-    - Make sure the directory `C:\SDL2-w64\include\SDL2` contains `SDL2.h`, `SDL2_image.h` and `SDL2_ttf.h`
-3. Get g++ and mingw:
-    - Install [MSYS2](https://www.msys2.org/) following the setup wizard
-    - Run `ucrt64.exe` located in the MSYS2 install folder, for example `C:\msys64`
-    - Enter `pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain` into the opened terminal
-    - When prompted to select packages, press `ENTER` to download all
-    - Add `C:\msys64\ucrt64\bin` and `C:\msys64\usr\bin` as entries to your `Path` system environmental variable, if not there already (adjust path if needed)
-    - Make sure that no other mingw32 directories are listed in the `Path` environmental variable, as an older version of the g++ compiler or the lack of certain libraries could prevent compiling or proper running of the software
-4. Build
-    - Clone this repository
-    - CD into `particle_simulation`
-    - Enter `g++ -c src/*.cpp -std=c++20 -O3 -Wall -I include -I C:/SDL2-w64/include` to build the .o files (adjust SDL2 path if needed)
-    - Enter `g++ -static-libgcc -static-libstdc++ *.o -o bin/x64/build/particles -mwindows -s -L C:/SDL2-w64/lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf` to link (adjust SDL2 path if needed too)
-5. Run
-    - The executable should be located in `bin/x64/build`, the source code includes this directory and required DLL files to run on any machine
+ 1. Clone this repository 
+	 - `git clone https://github.com/Avi225/particle_simulation`
+ 2. Enter the cloned repository
+	 - `cd particle_simulation`
+ 3. Create a build folder
+	 - `mkdir build`
+ 4. Enter the build folder
+	-  `cd build`
+ 5. Run CMake configuration
+	 - `cmake -G "Visual Studio 17 2022" ..`
+ 6. Build the project
+	 - `cmake --build . --config Release`
+ 7. The executable is located in `build/Release`
+ 8. Copy the `res` directory into the executable directory
+ 9. You may need to copy the required SDL3 DLLs into the executable directory, these should be located at:
+	- `SDL3.dll` - `build/_deps/sdl3-build/Release`
+	- `SDL3_ttf.dll` - `build/_deps/sdl_ttf-build/Release`
+	- `SDL3_image.dll` - `build/_deps/sdl_image-build/Release`
 
 ## Support
 If you got stuck at any point building the software, encountered a bug or have any other questions feel free to open a Github issue or send me a message.
 
 
-## Goals for v0.2.0
+## Goals for v0.3.0
 
-- ✅️ Better particle-particle collisions
-- ⬜️ UI system
+- Unified logging
+- Better comments
+- Expanded GUI system
+- Obstacle implementation
+- Optimalization
 
 <!-- CONTRIBUTING -->
 ## Contributing
