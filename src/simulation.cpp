@@ -1,9 +1,7 @@
 #include "simulation.hpp"
 
-
 // Constructor for the simulation container
 simulationContainer::simulationContainer()
-
 {
 	pool = new ThreadPool(12);
 
@@ -21,24 +19,37 @@ simulationContainer::simulationContainer()
 
 	quadrantCapacity = 192/2; // Maximum capacity of particles per quadrant in quadtree
 
-	nodeHalfDimension = 5000; // Half dimension of the simulation space
+	nodeHalfDimension = 8192; // Half dimension of the simulation space
 
 	nodeQuadTree = new quadTree({vector2d(0, 0), nodeHalfDimension}, quadrantCapacity);	// Root of the quadtree system
 
 	isPlacingParticle = false; // Flag for placing a particle
 
-	iterationSteps = 2; // Number of iteration steps for collision resolution
+    placeParticlePosition = vector2d(0, 0); // Position of placed particle
+	
+    running = false; // Flag to determine if the simulation is being updated
+
+    particleCount = 0; // Total number of particles currently being simulated
+    
+    selectedQuadTree = nullptr; // Currently selected quadrant of the QuadTree, for debugging
+
+    iterationSteps = 2; // Number of iteration steps for collision resolution
 }
 
-
+void simulationContainer::cleanUp()
+{
+    delete pool;
+    nodeQuadTree -> clear();
+    delete nodeQuadTree;
+    for (particle* p : particles) {
+        delete p;
+    }
+    particles.clear();
+}
 
 // Update the simulation state
 void simulationContainer::update()
 {
-    selectedQuadTree = nullptr;
-
-    particleCount = int(particles.size());
-
     // Update particles' positions and velocities
     for (auto& p : particles)
     {
@@ -57,9 +68,9 @@ void simulationContainer::update()
     }
     for (int i = 0; i < iterationSteps; ++i)
     {
-
+        selectedQuadTree = nullptr;
 	    nodeQuadTree->clear();
-
+        delete nodeQuadTree;
 	    nodeQuadTree = new quadTree({vector2d(0, 0), nodeHalfDimension}, quadrantCapacity);
 
 	    // Insert particles into the quadtree
@@ -85,7 +96,7 @@ void simulationContainer::update()
 	    std::unordered_map<int, std::future<bool>> tasks;
 		
 
-	    for (size_t i = 0; i < quads.size(); ++i)
+	    for (int i = 0; i < quads.size(); ++i)
 	    {
 	        // Skip empty quadrants
 	        if (quads[i]->particles.size() == 0)
@@ -95,7 +106,6 @@ void simulationContainer::update()
 		        worker(quads[i]);
 		        return true;
 	    	});   
-	        //workers.push_back(std::thread(&simulationContainer::worker, this, q));
 	    }
 
 	    for (auto& [key, task]: tasks)
@@ -105,16 +115,15 @@ void simulationContainer::update()
 	}
 }
 
-
 // Render the simulation
 void simulationContainer::render(aCamera *camera)
 {
     // Render placing particle preview line if necessary
     if(isPlacingParticle)
     {
-        int x, y;
+        float x, y;
         SDL_GetMouseState(&x, &y);
-        vector2d mouse = {double(x), double(y)};
+        vector2d mouse = {x, y};
 
         mouse = camera->screenToWorld(mouse);
 
@@ -127,13 +136,13 @@ void simulationContainer::render(aCamera *camera)
         p -> render(camera);
     }
 
-    // Render debug information for particles in the selected quadtree
+    //Render debug information for particles in the selected quadtree
     if(selectedQuadTree != nullptr)
     {
-        for(auto& p : selectedQuadTree->particles)
-        {
-            p -> renderDebug(camera);
-        }
+         for(auto& p : selectedQuadTree->particles)
+         {
+             p -> renderDebug(camera);
+         }
     }
 
     // Render static lines and their normals
@@ -144,7 +153,6 @@ void simulationContainer::render(aCamera *camera)
     }
 }
 
-
 // Select a quadtree
 void simulationContainer::select(aCamera* camera)
 {
@@ -153,9 +161,9 @@ void simulationContainer::select(aCamera* camera)
     nodeQuadTree->getLeaves(quads);
 
     // Get the current mouse position
-    int x, y;
+    float x, y;
     SDL_GetMouseState(&x, &y);
-    vector2d mouse = {double(x), double(y)};
+    vector2d mouse = {x, y};
     mouse = camera->screenToWorld(mouse);
 
     // Iterate through each leaf node of the quadtree
@@ -244,9 +252,9 @@ particle* simulationContainer::getParticle(int id)
 }
 
 // Get the count of particles in the simulation
-int* simulationContainer::getParticleCount()
+int simulationContainer::getParticleCount()
 {
-    return &particleCount;
+    return int(particles.size());
 }
 
 void simulationContainer::worker(quadTree* q)

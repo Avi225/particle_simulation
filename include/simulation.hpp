@@ -10,7 +10,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include <ThreadPool.h>
+#include "ThreadPool.h"
 
 #include "math.hpp"
 #include "utility.hpp"
@@ -24,6 +24,7 @@ class simulationContainer
 {
 	public:
 		simulationContainer();
+		void cleanUp();
 
 		void update();
 		void render(aCamera *camera);
@@ -39,34 +40,34 @@ class simulationContainer
 
 		void addParticle(vector2d position, double radius);
 		particle* getParticle(int id);
-		int* getParticleCount();
+		int getParticleCount();
 
 	private:
 		void worker(quadTree* q);
 
-		bool isPlacingParticle;
-		vector2d placeParticlePosition;
+		bool isPlacingParticle; 
+		vector2d placeParticlePosition; 
 
-		bool running;
+		bool running; 
 
-		int quadrantCapacity;
-		int particleCount;
+		int quadrantCapacity; 
+		int particleCount; 
 
 		std::vector<particle*> particles;
 		std::vector<staticPoint> staticPoints;
 		std::vector<staticLine> staticLines;
 
-		ThreadPool* pool;
+		ThreadPool* pool; 
 
-		double nodeHalfDimension;
-		quadTree* nodeQuadTree;
+		double nodeHalfDimension; 
+		quadTree* nodeQuadTree; 
 		quadTree* selectedQuadTree;
 
-		double density;
-		double restitution;
-		double energyLoss;
-		double friction;
-		double overlapGap;
+		double density; 
+		double restitution; 
+		double energyLoss; 
+		double friction; 
+		double overlapGap; 
 
-		int iterationSteps;
+		int iterationSteps; 
 };

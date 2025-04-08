@@ -16,29 +16,6 @@ particle::particle(vector2d nPosition, double nRadius)
 	acceleration = {0, 0.03}; // Apply a small downwards gravity force
 }
 
-// Particle move constructor
-// particle::particle(particle&& other)
-// : position(std::move(other.position)),
-//   velocity(std::move(other.velocity)),
-//   acceleration(std::move(other.acceleration)),
-//   radius(other.radius),
-//   mutex_(std::move(other.mutex_)) 
-// {}
-
-// // Particle move assignment operator
-// particle& particle::operator=(particle&& other)
-// {
-//     if (this != &other)
-//     {
-//         position = std::move(other.position);
-//         velocity = std::move(other.velocity);
-//         acceleration = std::move(other.acceleration);
-//         radius = other.radius;
-//         mutex_ = std::move(other.mutex_);
-//     }
-//     return *this;
-// }
-
 // Render the particle
 void particle::render(aCamera *camera)
 {

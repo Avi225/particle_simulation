@@ -20,14 +20,3 @@ private:
 	double cellWidth;
 	double cellHeight;
 };
-
-struct mutexWrapper
-{
-    std::unique_ptr<std::mutex> mutex_ptr;
-
-    mutexWrapper();
-
-    mutexWrapper(mutexWrapper&& other);
-
-    mutexWrapper& operator=(mutexWrapper&& other);
-};

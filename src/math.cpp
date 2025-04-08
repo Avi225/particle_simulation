@@ -32,24 +32,49 @@ double aAbs(double value)
 	return((value<0) ? -value : value);
 }
 
-double isqrt(double target) 
-{ 
-	const float th = 1.5F; 
+double isqrt(double target)
+{
+    const float th = 1.5F;
 
-    float x2 = static_cast<float>(target) * 0.5F; 
-    float y = static_cast<float>(target); 
+    float x2 = static_cast<float>(target) * 0.5F;
+    float y = static_cast<float>(target);
 
-    long i;
+    unsigned int i;
     memcpy(&i, &y, sizeof(i));
 
-    i = 0x5f3759df - ( i >> 1 ); 
+    i = 0x5f3759df - (i >> 1);
     memcpy(&y, &i, sizeof(i));
 
-    y = y * ( th - ( x2 * y * y ) ); 
-    y = y * ( th - ( x2 * y * y ) ); // Optional second iteration for increased accuracy
+    y = y * (th - (x2 * y * y));
+    y = y * (th - (x2 * y * y));
 
-    return static_cast<double>(y); 
+    return static_cast<double>(y);
 }
+
+SDL_Color interpolateColor(const SDL_Color& color1, const SDL_Color& color2, double factor)
+{
+    factor = std::max(0.0, std::min(1.0, factor));
+    SDL_Color result;
+    result.r = static_cast<Uint8>(color1.r + (color2.r - color1.r) * factor);
+    result.g = static_cast<Uint8>(color1.g + (color2.g - color1.g) * factor);
+    result.b = static_cast<Uint8>(color1.b + (color2.b - color1.b) * factor);
+    result.a = static_cast<Uint8>(color1.a + (color2.a - color1.a) * factor);
+    return result;
+}
+
+double interpolateDouble(double value1, double value2, double factor)
+{
+    factor = std::max(0.0, std::min(1.0, factor));
+    return value1 + (value2 - value1) * factor;
+}
+
+vector2d::vector2d()
+: x(0), y(0)
+{}
+
+vector2d::vector2d(double x, double y)
+: x(x), y(y)
+{}
 
 vector2d& vector2d::operator+=(vector2d const& a)
 {

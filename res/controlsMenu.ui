@@ -1,0 +1,227 @@
+con
+{
+	id{main}
+	size{180, 380}
+	sizeScaling{pixel}
+	color{255, 255, 255, 00}
+	alignment{ne}
+	elements
+	{
+		con
+		{
+			size{160, 20}
+			margin{20, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{camera}
+					size{20, 20}
+					alignment{n}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{40, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{move_[W,S,A,D]}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{60, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{zoom_[Q,E]}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{80, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{speed_up_[LSHIFT]}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{100, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{fullscreen_[F11]}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{140, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{simulation}
+					size{20, 20}
+					alignment{n}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{160, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{pause_[SPACE]}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{180, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{place_[LMB]}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{200, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{spawn_[F]}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{220, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{amount_[SCROLL]}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{240, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{debug_[Z]}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			size{160, 20}
+			margin{260, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 32}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					text{tick_[R]}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+	}
+}

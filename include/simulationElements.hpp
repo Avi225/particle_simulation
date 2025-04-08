@@ -38,8 +38,6 @@ private:
 	vector2d acceleration;
 
 	double radius;
-
-	//std::shared_mutex mtx;
 };
 
 struct staticPoint

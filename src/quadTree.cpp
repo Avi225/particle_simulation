@@ -96,32 +96,34 @@ void quadTree::render(aCamera* camera, vector2d mouse)
 
 	// Draw the boundary of the quadrant
 	vector2d pos = {boundary.center.x - boundary.halfDimension, boundary.center.y - boundary.halfDimension};
-	vector2d siz = {boundary.halfDimension * 2, boundary.halfDimension * 2};
+	vector2d size = {boundary.halfDimension * 2, boundary.halfDimension * 2};
 	SDL_Color color = {0, 128, 255, 16};
 
 	mouse = camera -> screenToWorld(mouse);
-	if(mouse.x < pos.x+siz.x && mouse.x > pos.x && mouse.y < pos.y+siz.y && mouse.y > pos.y && nw == nullptr)
-		color = {255, 0, 0, 64};
+	if(mouse.x < pos.x+size.x && mouse.x > pos.x && mouse.y < pos.y+size.y && mouse.y > pos.y && nw == nullptr)
+		color = {255, 0, 0, 16};
 
-	camera -> renderRect(pos, siz, color, false);
+	SDL_FRect rect = {float(pos.x), float(pos.y), float(size.x), float(size.y)};
+	camera -> renderRect(rect, color, false);
 
 	// Draw the lines of the quadrant
-	color.a += 64;
+	color.a += 32;
 	vector2d a = {boundary.center.x - boundary.halfDimension + 0.2, boundary.center.y - boundary.halfDimension + 0.2};
 	vector2d b = {boundary.center.x - boundary.halfDimension + 0.2, boundary.center.y + boundary.halfDimension - 0.2};
-	camera -> renderLine(a, b, 0.4, color, false);
+	camera -> renderLine(a, b, 2, color, false);
 
 	a = {boundary.center.x + boundary.halfDimension - 0.2, boundary.center.y + boundary.halfDimension - 0.2};
 	b = {boundary.center.x + boundary.halfDimension - 0.2, boundary.center.y - boundary.halfDimension + 0.2};
-	camera -> renderLine(a, b, 0.4, color, false);
+	camera -> renderLine(a, b, 2, color, false);
 
 	a = {boundary.center.x - boundary.halfDimension + 0.2, boundary.center.y - boundary.halfDimension + 0.2};
 	b = {boundary.center.x + boundary.halfDimension - 0.2, boundary.center.y - boundary.halfDimension + 0.2};
-	camera -> renderLine(a, b, 0.4, color, false);
+	camera -> renderLine(a, b, 2, color, false);
+
 
 	a = {boundary.center.x + boundary.halfDimension - 0.2, boundary.center.y + boundary.halfDimension - 0.2};
 	b = {boundary.center.x - boundary.halfDimension + 0.2, boundary.center.y + boundary.halfDimension - 0.2};
-	camera -> renderLine(a, b, 0.4, color, false);
+	camera -> renderLine(a, b, 2, color, false);
 }
 
 // Insert a particle into the quadtree

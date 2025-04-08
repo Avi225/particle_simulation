@@ -1,5 +1,9 @@
 #pragma once
 
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+
 #include <cmath>
 #include <iostream>
 
@@ -15,13 +19,15 @@ double aAbs(double value);
 
 double isqrt(double target);
 
+SDL_Color interpolateColor(const SDL_Color& color1, const SDL_Color& color2, double factor);
+
+double interpolateDouble(double value1, double value2, double factor);
+
 struct vector2d
 {
-	vector2d() {}
+	vector2d();
 
-	vector2d(double x, double y)
-		: x(x), y(y)
-	{}
+	vector2d(double x, double y);
 
 	vector2d& operator+=(vector2d const& a);
 	vector2d& operator-=(vector2d const& a);

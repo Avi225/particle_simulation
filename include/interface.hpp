@@ -1,104 +1,68 @@
 #pragma once
 
-#include "aCamera.hpp"
+#include <fstream>
+#include <functional>
+#include <format>
+
 #include "math.hpp"
+#include "aCamera.hpp"
+#include "utility.hpp"
+#include "log.hpp"
+#include "parser.hpp"
 
-#include <vector>
-#include <string>
-#include <map>
-
-struct state
+struct menu
 {
-	state();
-	state(bool nHovered, bool nPressed, bool nSelected, bool nButton);
+	virtual ~menu() = default;
+	menu();
 
-	bool hovered;
-	bool pressed;
-	bool selected;
-	bool button;
+	virtual void update(aCamera* camera, SDL_FRect area, menu* root);
+	virtual void render(aCamera* camera, SDL_FRect area, menu* root);
+	virtual void setToken(std::string token, std::string value);
+	virtual menu* getById(std::string nId);
+	virtual void cleanUp();
+
+	std::vector<menu*> elements;
+
+	std::string id;
+	SDL_FRect bound;
 };
 
-struct tabElement
+struct menuCon : public menu
 {
-	virtual void render(aCamera* camera, vector2d position);
-	virtual void update() {}
-	int height;
-	vector2d adjustment;
-	std::string info;
+	menuCon();
+
+	void update(aCamera* camera, SDL_FRect area, menu* root);
+	void render(aCamera* camera, SDL_FRect area, menu* root);
+	void setToken(std::string token, std::string value);
+
+	vector2d size;
+	SDL_Color color;
+
+	std::string alignment; // c / n / ne / e / se / s / sw / w / nw
+	std::string sizeScaling; // pixel / percent
+	std::string marginScaling; // pixel / percent
+	std::string paddingScaling; // pixel / percent
+
+	SDL_FRect margin;
+	SDL_FRect padding;
 };
 
-struct tabText : public tabElement
+struct menuText : public menu
 {
-	tabText(std::string nValue, int nSize, std::string info);
-	void render(aCamera* camera, vector2d position);
+	menuText();
 
-	std::string value;
-	int size;
-};
+	void update(aCamera* camera, SDL_FRect area, menu* root);
+	void render(aCamera* camera, SDL_FRect area, menu* root);
+	void setToken(std::string token, std::string value);
+	void cleanUp();
 
-struct tabBreak : public tabElement
-{
-	tabBreak();
-	void render(aCamera* camera, vector2d position);
-};
 
-struct tabSliderD : public tabElement
-{
-	tabSliderD(double* nValue, double nMinValue, double nMaxValue, std::string info);
-	void render(aCamera* camera, vector2d position);
-	void update();
+	vector2d size;
+	SDL_Color color;
 
-	double* value;
-	double minValue;
-	double maxValue;
-};
+	std::string alignment; // c / n / ne / e / se / s / sw / w / nw
 
-struct tabDisplayI : public tabElement
-{
-	tabDisplayI(int* nValue, int nSize, std::string nText, std::string info);
-	void render(aCamera* camera, vector2d position);
+	std::string* text;
+	bool textOwned;
 
-	int* value;
-	int size;
-	std::string text;
-};
-
-struct tabDisplayD : public tabElement
-{
-	tabDisplayD(double* nValue, int nSize, std::string nText, std::string info);
-	void render(aCamera* camera, vector2d position);
-
-	double* value;
-	int size;
-	std::string text;
-};
-
-struct tab
-{
-	tab(vector2d nPosition, std::string nName);
-
-	void insertElement(tabElement* element);
-	
-	void render(aCamera* camera, vector2d globalPosition);
-
-	std::vector<tabElement*> elements;
-	vector2d position;
-	int margin;
-	std::string name;
-	state tabState;
-};
-
-class menu
-{
-public:
-	menu(vector2d nPosition);
-	void insertTab(tab* nTab);
-	void updateTabs();
-	void render(aCamera* camera);
-
-private:
-	vector2d position;
-	std::map<std::string, tab*> tabs;
-
-	int margin;
 };

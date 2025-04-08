@@ -1,12 +1,17 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+
 #include <string>
 #include <vector>
-#include <cstdio>
+#include <algorithm>
+#include <sstream>
+#include <unordered_map>
+#include <format>
 
+#include "log.hpp"
 #include "math.hpp"
 
 class aWindow
@@ -26,7 +31,7 @@ public:
 
 	void display();
 
-	void renderRect(SDL_Rect rect, SDL_Color color);
+	void renderRect(SDL_FRect rect, SDL_Color color);
 
 	void renderDisc(vector2d position, int radius, SDL_Color color);
 
@@ -34,11 +39,9 @@ public:
 
 	void switchFullscreen();
 
-	void renderText(vector2d position, std::string text, int size, SDL_Color color);
+	void renderText(vector2d position, double height, std::string alignment, std::string text, SDL_Color color);
 
-	void renderTexture(SDL_Texture* texture, SDL_Rect destination, double angle, SDL_Color color);
-
-	void renderPixel(vector2d position, SDL_Color color);
+	void renderTexture(SDL_Texture* texture, SDL_FRect* source, SDL_FRect* destination, double angle, SDL_Color color);
 
 	void updateSize(int nWidth, int nHeight);
 
@@ -49,11 +52,13 @@ private:
 
 	SDL_Texture* screenTexture;
 
+	TTF_TextEngine* textEngine;
+
 	SDL_Color background;
 
 	int resolutionMultiplier;
 
 	bool fullscreen;
 
-	TTF_Font* font;
+	std::unordered_map<int, TTF_Font*> fonts;
 };

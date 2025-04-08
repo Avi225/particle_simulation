@@ -1,0 +1,126 @@
+con
+{
+	id{main}
+	size{160, 100}
+	margin{20, 20, 20, 20}
+	sizeScaling{pixel}
+	color{0, 0, 0, 32}
+	alignment{nw}
+	elements
+	{
+		con
+		{
+			size{160, 20}
+			margin{00, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 0}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					size{20, 20}
+					alignment{n}
+					text{stats}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			id{fpsCon}
+			size{160, 20}
+			margin{20, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 0}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					id{fps}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			id{tpsCon}
+			size{160, 20}
+			margin{40, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 0}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					id{tps}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+
+				}
+			}
+		}
+		con
+		{
+			id{countCon}
+			size{160, 20}
+			margin{60, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 0}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					id{count}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			id{stateCon}
+			size{160, 20}
+			margin{80, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 0}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					id{state}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}
+		con
+		{
+			id{logCon}
+			size{160, 20}
+			margin{100, 0, 0, 0}
+			sizeScaling{pixel}
+			color{0, 0, 0, 0}
+			alignment{nw}
+			elements
+			{
+				text
+				{
+					id{log}
+					size{20, 20}
+					alignment{nw}
+					color{255, 255, 255, 255}
+				}
+			}
+		}	
+	}
+}

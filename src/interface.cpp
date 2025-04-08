@@ -1,211 +1,330 @@
 #include "interface.hpp"
 
-void tabElement::render(aCamera* camera, vector2d position)
+menu::menu()
+:id("n/a"),
+bound({0, 0, 0, 0})
 {}
 
-tabText::tabText(std::string nValue, int nSize, std::string info)
-:value(nValue), size(nSize)
-{
-	height = 22*size;
-	adjustment = {0, 0};
-}
-
-void tabText::render(aCamera* camera, vector2d position)
-{
-	SDL_Color color = {255, 255, 255, 255};
-	camera -> renderText(position, size, value, color, 1);
-}
-
-tabBreak::tabBreak()
-{
-	height = 22;
-	adjustment = {0, 0};
-}
-
-void tabBreak::render(aCamera* camera, vector2d position)
+menuCon::menuCon()
+:menu(),
+size({50, 50}),
+color({0, 0, 0, 255}),
+alignment("c"),
+sizeScaling("pixel"),
+marginScaling("pixel"),
+paddingScaling("pixel"),
+margin({0, 0, 0, 0}),
+padding({0, 0, 0, 0})
 {}
 
-tabSliderD::tabSliderD(double* nValue, double nMinValue, double nMaxValue, std::string info)
-: value(nValue), minValue(nMinValue), maxValue(nMaxValue)
+menuText::menuText()
+:menu(),
+size({24, 24}),
+color({0, 0, 0, 255}),
+alignment("c"),
+text(new std::string("new_text")),
+textOwned(true)
+{}
+
+// ███    ███ ███████ ███    ██ ██    ██ 
+// ████  ████ ██      ████   ██ ██    ██ 
+// ██ ████ ██ █████   ██ ██  ██ ██    ██ 
+// ██  ██  ██ ██      ██  ██ ██ ██    ██ 
+// ██      ██ ███████ ██   ████  ██████  
+
+void menu::update(aCamera* camera, SDL_FRect area, menu* root)
 {
-	height = 22;
-	adjustment = {0, 11};
-}
-
-void tabSliderD::render(aCamera* camera, vector2d position)
-{
-	SDL_Color color = {255, 255, 255, 255};
-	camera -> renderLine(position, vector2d(position.x+150, position.y), 2, color, true);
-	vector2d pointPosition = position;
-	pointPosition.x += mapRange(*value, minValue, maxValue, 0, 150);
-	camera -> renderDisc(pointPosition, 5, color, true);
-}
-
-void tabSliderD::update()
-{
-	int x, y;
-
-	bool LMBdown = false;
-
-	if(SDL_GetMouseState(&x,&y) & SDL_BUTTON_LMASK)
-		LMBdown = true;
-
-}
-
-tabDisplayI::tabDisplayI(int* nValue, int nSize, std::string nText, std::string info)
-:value(nValue), size(nSize), text(nText)
-{
-	height = 22*size;
-	adjustment = {0, 0};
-}
-
-void tabDisplayI::render(aCamera* camera, vector2d position)
-{
-	SDL_Color color = {255, 255, 255, 255};
-	camera -> renderText(position, size, text + std::to_string(*value), color, 1);
-}
-
-tabDisplayD::tabDisplayD(double* nValue, int nSize, std::string nText, std::string info)
-:value(nValue), size(nSize), text(nText)
-{
-	height = 22*size;
-	adjustment = {0, 0};
-}
-
-void tabDisplayD::render(aCamera* camera, vector2d position)
-{
-	SDL_Color color = {255, 255, 255, 255};
-	camera -> renderText(position, size, text + std::to_string(*value), color, 1);
-}
-
-tab::tab(vector2d nPosition, std::string nName)
-: position(nPosition), name(nName)
-{
-	margin = 20;
-}
-
-void tab::insertElement(tabElement* element)
-{
-	elements.push_back(element);
-}
-
-void tab::render(aCamera* camera, vector2d globalPosition)
-{
-	int totalHeight = 0;
 	for(int i = 0; i < int(elements.size()); ++i)
 	{
-		totalHeight += elements[i] -> height;
+		elements[i] -> update(camera, area, root);
 	}
+}
 
-	SDL_Rect rect =
-	{
-		int(position.x+globalPosition.x),
-		int(position.y+globalPosition.y),
-		160+margin*2,
-		totalHeight+margin*2
-	};
-	SDL_Color color = {0, 0, 0, 225};
-	camera -> renderRect(rect, color, true);
-	
-	vector2d elementPosition = position + globalPosition + margin;
-
+void menu::render(aCamera* camera, SDL_FRect area, menu* root)
+{
 	for(int i = 0; i < int(elements.size()); ++i)
-	{
-		elements[i] -> render(camera, elementPosition+elements[i] -> adjustment);
-		elementPosition.y += elements[i] -> height;
-	}
-}
- 
-state::state()
-:hovered(false), pressed(false), selected(false), button(false)
-{
-}
-
-state::state(bool nHovered, bool nPressed, bool nSelected, bool nButton)
-:hovered(nHovered), pressed(nPressed), selected(nSelected), button(nButton)
-{}
-
-menu::menu(vector2d nPosition)
-: position(nPosition)
-{
-	margin = 20;
-}
-
-void menu::insertTab(tab* nTab)
-{
-	tabs[nTab -> name] = nTab;
-}
-
-void menu::updateTabs()
-{
-	int x, y;
-	SDL_Rect rect;
-
-	bool LMBdown = false;
-	int tabPosition = 0;
-
-
-	if(SDL_GetMouseState(&x,&y) & SDL_BUTTON_LMASK)
-		LMBdown = true;
-
-
-	for(auto const& [name, tab] : tabs)
-	{
-		rect =
-			{
-				int(position.x)+tabPosition*104,
-				int(position.y),
-				96,
-				33
-			};
-
-		bool mouseOver = (x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h);
-
-		
-		tab -> tabState.selected = (tab -> tabState.pressed && mouseOver && !LMBdown) ? !tab -> tabState.selected : tab -> tabState.selected;
-		tab -> tabState.pressed = (LMBdown && tab -> tabState.hovered) ? true : false;
-		tab -> tabState.hovered = (mouseOver && !LMBdown) || tab -> tabState.pressed;
-
-		if(tab -> tabState.selected)
-		{
-			for(auto const& [n, t] : tabs)
-				t -> tabState.selected = false;
-			tab -> tabState.selected = true;
-		}
-
-		//printf(" %d %d %d ||", tab -> tabState.hovered, tab -> tabState.pressed, tab -> tabState.selected);
-		
-		tabPosition++;
-	}
-	//printf("\n");
-}
-
-void menu::render(aCamera* camera)
-{
-	SDL_Color color = {0, 0, 0, 128};
-	int tabPosition = 0;
-	for(auto const& [name, tab] : tabs)
-	{
-		SDL_Rect rect =
-		{
-			int(position.x)+tabPosition*104,
-			int(position.y),
-			96,
-			33
-		};
-
-		camera -> renderRect(rect, color, true);
-		SDL_Color color = {255, 255, 255, 255};
-		color.a -= tab -> tabState.hovered * 64;
-		color.a -= tab -> tabState.pressed * 64;
-		color.a -= tab -> tabState.selected * 64;
-
-		camera -> renderText(vector2d(position.x+tabPosition*104+48-(tab -> name.length()*10/2), position.y+4), 1, tab -> name, color, true);
-
-		if(tab -> tabState.selected)
-			tab -> render(camera, position);
-
-		tabPosition++;
+	{	
+		elements[i] -> render(camera, area, root);	
 	}
 }
 
+menu* menu::getById(std::string nId)
+{
+   if (id == nId)
+        return this;
+    
+    for (int i = 0; i < int(elements.size()); ++i)
+    {   
+        menu* found = elements[i]->getById(nId);
+        if (found != nullptr)
+            return found;
+    }
+    return nullptr;
+}
+
+void menu::setToken(std::string token, std::string value)
+{
+    if(token == "id")
+        id = value;
+    else
+        log::error(std::format("Error: Mismatched token \"{}\" value \"{}\" for element \"menu\"", token, value));
+}
+
+void menu::cleanUp()
+{
+    for (int i = 0; i < int(elements.size()); ++i)
+    {   
+        elements[i] -> cleanUp();
+        delete elements[i];
+    }
+}
+
+// ███    ███ ███████ ███    ██ ██    ██  ██████  ██████  ███    ██ 
+// ████  ████ ██      ████   ██ ██    ██ ██      ██    ██ ████   ██ 
+// ██ ████ ██ █████   ██ ██  ██ ██    ██ ██      ██    ██ ██ ██  ██ 
+// ██  ██  ██ ██      ██  ██ ██ ██    ██ ██      ██    ██ ██  ██ ██ 
+// ██      ██ ███████ ██   ████  ██████   ██████  ██████  ██   ████ 
+
+
+void menuCon::update(aCamera* camera, SDL_FRect area, menu* root)
+{
+    for(int i = 0; i < int(elements.size()); ++i)
+    {
+        elements[i] -> update(camera, area, root);
+    }
+}
+
+void menuCon::render(aCamera* camera, SDL_FRect area, menu* root)
+{
+    SDL_FRect rect = area;
+    SDL_FRect nMargin = {0, 0, 0, 0};
+    SDL_FRect nPadding = {0, 0, 0, 0};
+
+    if(sizeScaling != "pixel" && sizeScaling != "percent")
+    {
+        log::error(std::format("Error: sizeScaling \"{}\" not valid", sizeScaling));
+    }
+
+    if(marginScaling != "pixel" && marginScaling != "percent")
+    {
+        log::error(std::format("Error: marginScaling \"{}\" not valid", marginScaling));
+    }
+
+    if(paddingScaling != "pixel" && paddingScaling != "percent")
+    {
+        log::error(std::format("Error: paddingScaling \"{}\" not valid", paddingScaling));
+    }
+
+
+    rect.w = float((sizeScaling=="pixel") ? size.x : ((sizeScaling=="percent") ? (area.w*(size.x/100)) : 0));
+    rect.h = float((sizeScaling=="pixel") ? size.y : ((sizeScaling=="percent") ? (area.h*(size.y/100)) : 0));
+
+    nMargin.x = float((marginScaling=="pixel") ? margin.x : ((marginScaling=="percent") ? (margin.x*(rect.w/100)) : 0));
+    nMargin.y = float((marginScaling=="pixel") ? margin.y : ((marginScaling=="percent") ? (margin.y*(rect.h/100)) : 0));
+    nMargin.w = float((marginScaling=="pixel") ? margin.w : ((marginScaling=="percent") ? (margin.w*(rect.w/100)) : 0));
+    nMargin.h = float((marginScaling=="pixel") ? margin.h : ((marginScaling=="percent") ? (margin.h*(rect.h/100)) : 0));
+
+    nPadding.x = float((paddingScaling=="pixel") ? padding.x : ((paddingScaling=="percent") ? (padding.x*(rect.w/100)) : 0));
+    nPadding.y = float((paddingScaling=="pixel") ? padding.y : ((paddingScaling=="percent") ? (padding.y*(rect.h/100)) : 0));
+    nPadding.w = float((paddingScaling=="pixel") ? padding.w : ((paddingScaling=="percent") ? (padding.w*(rect.w/100)) : 0));
+    nPadding.h = float((paddingScaling=="pixel") ? padding.h : ((paddingScaling=="percent") ? (padding.h*(rect.h/100)) : 0)); 
+
+    if(alignment=="c")
+    {
+        rect.x += (area.w / 2 - rect.w / 2);
+        rect.y += (area.h / 2 - rect.h / 2);
+    }
+    else if (alignment=="n")
+    {
+        rect.x += (area.w / 2 - rect.w / 2);
+    }
+    else if (alignment=="ne")
+    {
+        rect.x += area.w - rect.w;
+    }
+    else if (alignment=="e")
+    {
+        rect.x += area.w - rect.w;
+        rect.y += (area.h / 2 - rect.h / 2);
+    }
+    else if (alignment=="se")
+    {
+        rect.x += area.w - rect.w;
+        rect.y += area.h - rect.h;
+    }
+    else if (alignment=="s")
+    {
+        rect.x += (area.w / 2 - rect.w / 2);
+        rect.y += area.h - rect.h;
+    }
+    else if (alignment=="sw")
+    {
+        rect.y += area.h - rect.h;
+    }
+    else if (alignment=="w")
+    {
+        rect.y += (area.h / 2 - rect.h / 2);
+    }
+    else if (alignment=="nw")  
+    {
+        rect.x = rect.x;
+        rect.y = rect.y;
+    }
+    else
+    {
+        log::error(std::format("Error: alignment \"{}\" not valid", alignment));
+    }
+
+    rect.x += nMargin.h;
+    rect.y += nMargin.x;
+
+    camera -> renderRect(rect, color, true);
+    bound = rect;
+    area = rect;
+    area.x += nPadding.h;
+    area.y += nPadding.x;
+
+    area.w -= nPadding.h;
+    area.h -= nPadding.x;
+
+    area.w -= nPadding.y;
+    area.h -= nPadding.w;
+
+    for(int i = 0; i < int(elements.size()); ++i)
+    {   
+        elements[i] -> render(camera, area, root);    
+    }
+}
+
+void menuCon::setToken(std::string token, std::string value)
+{
+    if(token == "id")
+        id = value;
+    else if(token == "size")
+        size = parser::parseVector(value);
+    else if(token == "color")
+        color = parser::parseColor(value);
+    else if(token == "alignment")
+        alignment = value;
+    else if(token == "sizeScaling")
+        sizeScaling = value;
+    else if(token == "marginScaling")
+        marginScaling = value;
+    else if(token == "paddingScaling")
+        paddingScaling = value;
+    else if(token == "margin")
+        margin = parser::parseRect(value);
+    else if(token == "padding")
+        padding = parser::parseRect(value);
+    else
+        log::error(std::format("Error: Mismatched token \"{}\" value \"{}\" for element \"con\"", token, value));
+}
+
+
+// ███    ███ ███████ ███    ██ ██    ██ ████████ ███████ ██   ██ ████████ 
+// ████  ████ ██      ████   ██ ██    ██    ██    ██       ██ ██     ██    
+// ██ ████ ██ █████   ██ ██  ██ ██    ██    ██    █████     ███      ██    
+// ██  ██  ██ ██      ██  ██ ██ ██    ██    ██    ██       ██ ██     ██    
+// ██      ██ ███████ ██   ████  ██████     ██    ███████ ██   ██    ██    
+
+
+void menuText::update(aCamera* camera, SDL_FRect area, menu* root)
+{
+    for(int i = 0; i < int(elements.size()); ++i)
+    {
+        elements[i] -> update(camera, area, root);
+    }
+}
+
+void menuText::render(aCamera* camera, SDL_FRect area, menu* root)
+{
+    SDL_FRect rect = area;
+
+    if(alignment=="c")
+    {
+        rect.x += (area.w / 2);
+        rect.y += (area.h / 2);
+    }
+    else if (alignment=="n")
+    {
+        rect.x += (area.w / 2);
+    }
+    else if (alignment=="ne")
+    {
+        rect.x += area.w;
+    }
+    else if (alignment=="e")
+    {
+        rect.x += area.w;
+        rect.y += (area.h / 2);
+    }
+    else if (alignment=="se")
+    {
+        rect.x += area.w;
+        rect.y += area.h;
+    }
+    else if (alignment=="s")
+    {
+        rect.x += (area.w / 2);
+        rect.y += area.h;
+    }
+    else if (alignment=="sw")
+    {
+        rect.y += area.h;
+    }
+    else if (alignment=="w")
+    {
+        rect.y += (area.h / 2);
+    }
+    else if (alignment=="nw")  
+    {
+        rect.x = rect.x;
+        rect.y = rect.y;
+    }
+    else
+    {
+        log::error(std::format("Error: alignment \"{}\" not valid", alignment));
+    }
+    camera -> renderText({double(rect.x), double(rect.y)}, size.y, alignment, *text, color, true);
+
+    for(int i = 0; i < int(elements.size()); ++i)
+    {   
+        elements[i] -> render(camera, area, root);    
+    }
+}
+
+void menuText::setToken(std::string token, std::string value)
+{
+    if(token == "id")
+        id = value;
+    else if(token == "size")
+        size = parser::parseVector(value);
+    else if(token == "color")
+        color = parser::parseColor(value);
+    else if(token == "alignment")
+        alignment = value;
+    else if(token == "text")
+    {
+        delete text;
+        std::string str = value;
+        std::replace(str.begin(), str.end(), '_', ' ');
+        text = new std::string(str);
+        textOwned = true;
+    }
+    else
+        log::error(std::format("Error: Mismatched token \"{}\" value \"{}\" for element \"text\"", token, value));
+}
+
+void menuText::cleanUp()
+{
+    if(textOwned)
+    {
+        delete text;
+    }
+    
+    for (int i = 0; i < int(elements.size()); ++i)
+    {   
+        elements[i] -> cleanUp();
+        delete elements[i];
+    }
+}
