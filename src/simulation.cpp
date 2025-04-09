@@ -275,8 +275,8 @@ void simulationContainer::worker(quadTree* q)
 
             double radiiSum = radiusA + b->getRadius();
 
-            if (abs(positionA.x - positionB.x) >= radiiSum ||
-                abs(positionA.y - positionB.y) >= radiiSum) // Skip collision detection if particles are not close enough
+            if (std::abs(positionA.x - positionB.x) >= radiiSum ||
+                std::abs(positionA.y - positionB.y) >= radiiSum) // Skip collision detection if particles are not close enough
                 continue;
 
             double distanceSquared = positionA.distanceSquared(positionB);
