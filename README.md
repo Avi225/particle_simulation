@@ -74,6 +74,10 @@ If you got stuck at any point building the software, encountered a bug or have a
 
 - Unified logging
 - Better comments
+- New control scheme
+
+## Goals for future releases
+
 - Expanded GUI system
 - Obstacle implementation
 - Optimalization
