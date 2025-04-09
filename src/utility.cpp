@@ -42,7 +42,7 @@ void grid::render(aCamera *camera)
         } else
         {
             int currentImportanceLevel = 0;
-            for (int level = 0; level < importanceIntervals.size(); ++level)
+            for (size_t level = 0; level < importanceIntervals.size(); ++level)
             {
                 if (i % importanceIntervals[level] == 0)
                 {
@@ -73,7 +73,7 @@ void grid::render(aCamera *camera)
         } else
         {
             int currentImportanceLevel = 0;
-            for (int level = 0; level < importanceIntervals.size(); ++level)
+            for (size_t level = 0; level < importanceIntervals.size(); ++level)
             {
                 if (i % importanceIntervals[level] == 0)
                 {

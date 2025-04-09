@@ -96,7 +96,7 @@ void simulationContainer::update()
 	    std::unordered_map<int, std::future<bool>> tasks;
 		
 
-	    for (int i = 0; i < quads.size(); ++i)
+	    for (size_t i = 0; i < quads.size(); ++i)
 	    {
 	        // Skip empty quadrants
 	        if (quads[i]->particles.size() == 0)
