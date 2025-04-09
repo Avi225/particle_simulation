@@ -1,8 +1,16 @@
 cmake_minimum_required(VERSION 3.30)
-project(particles VERSION 0.1 LANGUAGES CXX)
+project(particles VERSION 0.2.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
+    message(STATUS "Clang detected, adding libc++ flags.")
+endif()
+
 
 include(FetchContent)
 
@@ -27,32 +35,28 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SDL_ttf)
 
-file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-
-set(DUMMY_FILE "${CMAKE_BINARY_DIR}/force_recompile.txt")
-add_custom_command(
-    OUTPUT ${DUMMY_FILE}
-    COMMAND ${CMAKE_COMMAND} -E echo "Force recompile" > ${DUMMY_FILE}
-    COMMAND ${CMAKE_COMMAND} -E touch ${DUMMY_FILE}
-    COMMENT "Updating dummy file to force recompilation of sources"
+set(SOURCES
+    src/aCamera.cpp
+    src/aWindow.cpp
+    src/interface.cpp
+    src/main.cpp
+    src/manager.cpp
+    src/math.cpp
+    src/parser.cpp
+    src/quadTree.cpp
+    src/simulation.cpp
+    src/simulationElements.cpp
+    src/utility.cpp
 )
-
-add_custom_target(update_dummy ALL DEPENDS ${DUMMY_FILE})
-
-foreach(src ${SOURCES})
-    set_source_files_properties(${src} PROPERTIES OBJECT_DEPENDS ${DUMMY_FILE})
-endforeach()
 
 add_executable(particles ${SOURCES})
 
-target_include_directories(particles PRIVATE 
+target_include_directories(particles PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
 target_link_libraries(particles PRIVATE
-    SDL3::SDL3 
+    SDL3::SDL3
     SDL3_image::SDL3_image
     SDL3_ttf::SDL3_ttf
 )
-
-add_dependencies(particles update_dummy)
