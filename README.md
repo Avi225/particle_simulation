@@ -40,25 +40,31 @@ https://github.com/Avi225/particle_simulation/assets/61160595/b71bdaf8-afc3-4e10
 
 ## Building
 ### On Windows
-
- 1. Clone this repository 
+ 1. Prerequisites
+	 - [Git](https://git-scm.com/downloads/win)
+	 - [CMake](https://cmake.org/download/)
+	 - [Build Tools for Visual Studio 2022](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) (Desktop development with C++)
+	 - [NASM](https://www.nasm.us/pub/nasm/stable/)
+	 - [Perl](https://strawberryperl.com/)
+	 - Make sure Git, CMake, NASM and Perl are included in your system's `PATH` environmental variable
+ 3. Clone this repository 
 	 - `git clone https://github.com/Avi225/particle_simulation`
- 2. Enter the cloned repository
+ 4. Enter the cloned repository
 	 - `cd particle_simulation`
- 3. Create a build folder
+ 5. Create a build folder
 	 - `mkdir build`
- 4. Enter the build folder
+ 6. Enter the build folder
 	-  `cd build`
- 5. Run CMake configuration
+ 7. Run CMake configuration
 	 - `cmake -G "Visual Studio 17 2022" ..`
- 6. Build the project
+ 8. Build the project
 	 - `cmake --build . --config Release`
- 7. The executable is located in `build/Release`
- 8. Copy the `res` directory into the executable directory
- 9. You may need to copy the required SDL3 DLLs into the executable directory, these should be located at:
-	- `SDL3.dll` - `build/_deps/sdl3-build/Release`
-	- `SDL3_ttf.dll` - `build/_deps/sdl_ttf-build/Release`
-	- `SDL3_image.dll` - `build/_deps/sdl_image-build/Release`
+ 9. The executable is located in `build/Release`
+ 10. Copy the `res` directory into the executable directory
+ 11. You may need to copy the required SDL3 DLLs into the executable directory, these should be located at:
+	 - `SDL3.dll` - `build/_deps/sdl3-build/Release`
+	 - `SDL3_ttf.dll` - `build/_deps/sdl_ttf-build/Release`
+	 - `SDL3_image.dll` - `build/_deps/sdl_image-build/Release`
 
 ## Support
 If you got stuck at any point building the software, encountered a bug or have any other questions feel free to open a Github issue or send me a message.
