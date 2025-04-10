@@ -155,7 +155,7 @@ void manager::init()
 	currentTime = SDL_GetTicks() * 0.001;
 	accumulator = 0.0;
 
-	fpsCap = 0;
+
 	frameCount = 0;
 	fpsTimer = 0.0;
 	fps = 0;
@@ -173,6 +173,9 @@ void manager::init()
 
 	window = new aWindow("particles", 1280, 720);
 	camera = new aCamera(1280, 720, window);
+
+	fpsCap = window -> getRefreshRate(); 
+
 	int w, h;
 	window -> getSize(&w, &h);
 	window -> updateSize(w, h);
