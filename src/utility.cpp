@@ -46,7 +46,7 @@ void grid::render(aCamera *camera)
             {
                 if (i % importanceIntervals[level] == 0)
                 {
-                    currentImportanceLevel = level + 1;
+                    currentImportanceLevel = int(level) + 1;
                 }
             }
             double factor = (maxImportanceLevel == 0) ? 0.0 :
@@ -77,7 +77,7 @@ void grid::render(aCamera *camera)
             {
                 if (i % importanceIntervals[level] == 0)
                 {
-                    currentImportanceLevel = level + 1;
+                    currentImportanceLevel = int(level) + 1;
                 }
             }
             double factor = (maxImportanceLevel == 0) ? 0.0 :
