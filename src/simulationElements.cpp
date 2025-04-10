@@ -5,7 +5,7 @@ particle::particle()
 : position({0, 0}), radius(1)
 {
 	velocity = {0, 0};
-	acceleration = {0, 0.00}; // Apply a small downwards gravity force
+	acceleration = {0, 0.00};
 }
 
 // Particle class constructor with specified position and radius
@@ -13,13 +13,16 @@ particle::particle(vector2d nPosition, double nRadius)
 : position(nPosition), radius(nRadius)
 {
 	velocity = {0, 0};
-	acceleration = {0, 0.00}; // Apply a small downwards gravity force
+	acceleration = {0, 0.00};
 }
 
 // Render the particle
 void particle::render(aCamera *camera)
 {
 	SDL_Color color = {255, 255, 255, 255};
+	Uint8 factor = mapRange(velocity.length(), 0, 50, 0, 255);
+	color.g -= factor;
+	color.b -= factor;
 	camera -> renderDisc(position, radius, color, false);
 }
 
