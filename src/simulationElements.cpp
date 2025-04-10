@@ -5,7 +5,7 @@ particle::particle()
 : position({0, 0}), radius(1)
 {
 	velocity = {0, 0};
-	acceleration = {0, 0.03}; // Apply a small downwards gravity force
+	acceleration = {0, 0.00}; // Apply a small downwards gravity force
 }
 
 // Particle class constructor with specified position and radius
@@ -13,7 +13,7 @@ particle::particle(vector2d nPosition, double nRadius)
 : position(nPosition), radius(nRadius)
 {
 	velocity = {0, 0};
-	acceleration = {0, 0.03}; // Apply a small downwards gravity force
+	acceleration = {0, 0.00}; // Apply a small downwards gravity force
 }
 
 // Render the particle
