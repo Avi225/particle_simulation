@@ -23,7 +23,7 @@ public:
 
 	int getRefreshRate();
 
-	int getResolutionMultiplier();
+	double getResolutionMultiplier();
 
 	void cleanUp();
 
@@ -36,6 +36,8 @@ public:
 	void renderDisc(vector2d position, int radius, SDL_Color color);
 
 	void getSize(int* w, int* h);
+
+	SDL_Texture* getScreenTexture();
 
 	void switchFullscreen();
 
@@ -56,9 +58,11 @@ private:
 
 	SDL_Color background;
 
-	int resolutionMultiplier;
+	double resolutionMultiplier;
 
 	bool fullscreen;
 
 	std::unordered_map<int, TTF_Font*> fonts;
+
+	int windowWidth, windowHeight;
 };

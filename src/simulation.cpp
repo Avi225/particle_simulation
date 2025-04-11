@@ -73,7 +73,7 @@ void simulationContainer::update()
 		delete nodeQuadTree;
 		nodeQuadTree = new quadTree({vector2d(0, 0), nodeHalfDimension}, quadrantCapacity);
 
-		// Insert particles into the quadtree
+		//Insert particles into the quadtree
 		for (size_t i = particles.size(); i > 0; --i)
 		{
 		    size_t index = i - 1;
@@ -85,6 +85,10 @@ void simulationContainer::update()
 		        delete particles[index];
 		        particles.erase(particles.begin() + index);
 		    }
+		    else
+		    {
+		    	nodeQuadTree->insertParticle(particles[index]);
+		    }
 		}
 
 		nodeQuadTree->split();
@@ -94,7 +98,6 @@ void simulationContainer::update()
 
 		std::unordered_map<int, std::future<bool>> tasks;
 		
-
 		for (size_t i = 0; i < quads.size(); ++i)
 		{
 			// Skip empty quadrants
@@ -102,7 +105,8 @@ void simulationContainer::update()
 				continue; 
 
 			int index = int(i);
-			tasks[index] = pool->enqueue([this, &quads, index]() {
+			tasks[index] = pool->enqueue([this, &quads, index]()
+			{
 				worker(quads[index]);
 				return true;
 			});

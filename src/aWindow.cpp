@@ -6,12 +6,16 @@ aWindow::aWindow(const char* title, int width, int height)
 	: window(NULL), renderer(NULL)
 {
 	resolutionMultiplier = 2;
+
+	windowWidth = width;
+	windowHeight = height;
 	window = SDL_CreateWindow(title, width, height, 0);
 	if (window == NULL)
 	{
         fprintf(stderr, "FATAL ERROR: SDL_CreateWindow failed: %s\n", SDL_GetError());
         throw std::runtime_error("Window creation failed");
     }
+
 	if(!SDL_SetWindowResizable(window, true))
 	{
 		fprintf(stderr, "aWindow::aWindow - Set window resizable error: %s\n", SDL_GetError()); fflush(stderr);
@@ -24,7 +28,7 @@ aWindow::aWindow(const char* title, int width, int height)
         SDL_DestroyWindow(window);
         throw std::runtime_error("Renderer creation failed");
     }
-	screenTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, width*resolutionMultiplier, height*resolutionMultiplier);
+	screenTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, (int)(width*resolutionMultiplier), (int)(height*resolutionMultiplier));
 	if (screenTexture == NULL)
 	{
         fprintf(stderr, "FATAL ERROR: SDL_CreateTexture failed: %s\n", SDL_GetError());
@@ -32,10 +36,12 @@ aWindow::aWindow(const char* title, int width, int height)
         SDL_DestroyWindow(window);
         throw std::runtime_error("Screen texture creation failed");
     }
+
 	SDL_SetRenderTarget(renderer, screenTexture);
 	background = {30, 30, 30, 255};
 	fullscreen = false;
 	SDL_SetRenderDrawColor(renderer, background.r, background.g, background.b, background.a);
+	SDL_RenderClear(renderer);
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
 	textEngine = TTF_CreateSurfaceTextEngine();
@@ -60,6 +66,8 @@ aWindow::aWindow(const char* title, int width, int height)
             fonts[size] = tempFont;
         }
     }
+    printf("Using SDL Renderer: %s\n", SDL_GetRendererName(renderer)); fflush(stdout);
+
     fprintf(stderr, "aWindow::aWindow - Constructor finished successfully.\n"); fflush(stderr);
 }
 
@@ -92,7 +100,7 @@ int aWindow::getRefreshRate()
 	return int(mode -> refresh_rate);
 }
 
-int aWindow::getResolutionMultiplier()
+double aWindow::getResolutionMultiplier()
 {
 	return resolutionMultiplier;
 }
@@ -139,40 +147,51 @@ void aWindow::clear()
 
 void aWindow::display()
 {
-    if(!SDL_SetRenderTarget(renderer, NULL))
+    if (!SDL_SetRenderTarget(renderer, NULL))
     {
-    	fprintf(stderr, "aWindow::display - Set render target error: %s\n", SDL_GetError()); fflush(stderr);
+        fprintf(stderr, "aWindow::display - Set render target error: %s\n", SDL_GetError()); fflush(stderr);
     }
-    int w, h;
-    if(!SDL_GetWindowSize(window, &w, &h))
+
+    int pixelW = 0, pixelH = 0;
+
+    if (!SDL_GetWindowSizeInPixels(window, &pixelW, &pixelH))
     {
-    	fprintf(stderr, "aWindow::display - Get window size error: %s\n", SDL_GetError()); fflush(stderr);
+        fprintf(stderr, "aWindow::display - Get window size in pixels error: %s\n", SDL_GetError()); fflush(stderr);
     }
-    SDL_FRect rect = {0, 0, float(w), float(h)};
-    if(!SDL_RenderTexture(renderer, screenTexture, NULL, &rect))
+
+    SDL_Rect viewport = {0, 0, pixelW, pixelH};
+
+    if (!SDL_SetRenderViewport(renderer, &viewport))
     {
-    	fprintf(stderr, "aWindow::display - Render texture error: %s\n", SDL_GetError()); fflush(stderr);
+        fprintf(stderr, "aWindow::display - Set render viewport error: %s\n", SDL_GetError()); fflush(stderr);
     }
-    if(!SDL_RenderPresent(renderer))
+
+    if (!SDL_RenderTexture(renderer, screenTexture, NULL, NULL))
     {
-    	fprintf(stderr, "aWindow::display - Render present error: %s\n", SDL_GetError()); fflush(stderr);
+        fprintf(stderr, "aWindow::display - Render texture error: %s\n", SDL_GetError()); fflush(stderr);
     }
-    if(!SDL_SetRenderTarget(renderer, screenTexture))
+
+    if (!SDL_RenderPresent(renderer))
     {
-    	fprintf(stderr, "aWindow::display - Set render target error: %s\n", SDL_GetError()); fflush(stderr);
+        fprintf(stderr, "aWindow::display - Render present error: %s\n", SDL_GetError()); fflush(stderr);
+    }
+
+    if (!SDL_SetRenderTarget(renderer, screenTexture))
+    {
+        fprintf(stderr, "aWindow::display - Set render target error: %s\n", SDL_GetError()); fflush(stderr);
     }
 }
 
 void aWindow::renderRect(SDL_FRect rect, SDL_Color color)
 {
-    rect = {rect.x * resolutionMultiplier,
-            rect.y * resolutionMultiplier,
-            rect.w * resolutionMultiplier,
-            rect.h * resolutionMultiplier};
+    rect = {rect.x * float(resolutionMultiplier),
+            rect.y * float(resolutionMultiplier),
+            rect.w * float(resolutionMultiplier),
+            rect.h * float(resolutionMultiplier)};
     int ww, wh;
     getSize(&ww, &wh);
-    ww *= resolutionMultiplier;
-    wh *= resolutionMultiplier;
+    ww *= int(resolutionMultiplier);
+    wh *= int(resolutionMultiplier);
 
     if (rect.x > ww || rect.y > wh || rect.x + rect.w < 0 || rect.y + rect.h < 0)
     {
@@ -196,8 +215,8 @@ void aWindow::renderRect(SDL_FRect rect, SDL_Color color)
 
 void aWindow::renderDisc(vector2d position, int radius, SDL_Color color)
 {
-    position *= resolutionMultiplier;
-    radius *= resolutionMultiplier;
+    position *= float(resolutionMultiplier);
+    radius *= int(resolutionMultiplier);
 
     int offsetx, offsety, d;
 
@@ -252,13 +271,17 @@ void aWindow::renderDisc(vector2d position, int radius, SDL_Color color)
     }
 }
 
-void aWindow::getSize(int *w, int *h)
+void aWindow::getSize(int *nw, int *nh)
 {
-    if(!SDL_GetWindowSize(window, w, h))
-    {
-    	fprintf(stderr, "aWindow::getSize - Window size fetch error: %s\n", SDL_GetError()); fflush(stderr);
-    }
+    *nw = windowWidth;
+    *nh = windowHeight;
 }
+
+SDL_Texture* aWindow::getScreenTexture()
+{
+	return screenTexture;
+}
+
 
 void aWindow::switchFullscreen()
 {
@@ -286,8 +309,8 @@ void aWindow::switchFullscreen()
 
 void aWindow::renderText(vector2d position, double height, std::string alignment, std::string text, SDL_Color color)
 {
-	position *= resolutionMultiplier;
-	height *= resolutionMultiplier;
+	position *= float(resolutionMultiplier);
+	height *= float(resolutionMultiplier);
 
 	SDL_FRect rect = {float(position.x), float(position.y), 0.0, float(height*(std::count(text.begin(), text.end(), '\n' + 1)))};
 
@@ -358,8 +381,8 @@ void aWindow::renderText(vector2d position, double height, std::string alignment
 
 		int ww, wh;
 		getSize(&ww, &wh);
-		ww *= resolutionMultiplier;
-		wh *= resolutionMultiplier;
+		ww *= int(resolutionMultiplier);
+		wh *= int(resolutionMultiplier);
 		
 		if(rect.x > ww || rect.y > wh || rect.x+rect.w < 0 || rect.y+rect.h < 0)
 		{
@@ -404,10 +427,10 @@ void aWindow::renderTexture(SDL_Texture* texture, SDL_FRect* source, SDL_FRect* 
 {
 	SDL_FRect dst = *destination;
 
-	dst.x *= resolutionMultiplier;
-	dst.y *= resolutionMultiplier;
-	dst.w *= resolutionMultiplier;
-	dst.h *= resolutionMultiplier;
+	dst.x *= float(resolutionMultiplier);
+	dst.y *= float(resolutionMultiplier);
+	dst.w *= float(resolutionMultiplier);
+	dst.h *= float(resolutionMultiplier);
 
 	if(dst.w < 1)
 		dst.w = 1;
@@ -415,8 +438,8 @@ void aWindow::renderTexture(SDL_Texture* texture, SDL_FRect* source, SDL_FRect* 
 		dst.h = 1;
     int ww, wh;
     getSize(&ww, &wh);
-    ww *= resolutionMultiplier;
-    wh *= resolutionMultiplier;
+    ww *= int(resolutionMultiplier);
+    wh *= int(resolutionMultiplier);
 
     if(!SDL_SetTextureColorMod(texture, color.r, color.g, color.b))
     {
@@ -431,15 +454,32 @@ void aWindow::renderTexture(SDL_Texture* texture, SDL_FRect* source, SDL_FRect* 
     {
     	fprintf(stderr, "aWindow::renderTexture - Render texture rotated error: %s\n", SDL_GetError()); fflush(stderr);
     }
-
 }
 
 void aWindow::updateSize(int nWidth, int nHeight)
 {
-	SDL_DestroyTexture(screenTexture);
-	screenTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, nWidth*resolutionMultiplier, nHeight*resolutionMultiplier);
-	if(screenTexture == NULL)
-	{
-		fprintf(stderr, "aWindow::updateSize - Create texture error: %s\n", SDL_GetError()); fflush(stderr);
-	}
+    windowWidth = nWidth;
+    windowHeight = nHeight;
+
+    int textureW = static_cast<int>(nWidth * resolutionMultiplier);
+    int textureH = static_cast<int>(nHeight * resolutionMultiplier);
+
+    if (screenTexture != nullptr)
+    {
+        SDL_DestroyTexture(screenTexture);
+        screenTexture = nullptr;
+    }
+
+    screenTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, textureW, textureH);
+
+    if (screenTexture == nullptr)
+    {
+        fprintf(stderr, "aWindow::updateSize - Create texture error:%s\n", SDL_GetError()); fflush(stderr);
+        screenTexture = nullptr;
+    } else
+    {
+        SDL_SetRenderTarget(renderer, screenTexture);
+        SDL_SetRenderDrawColor(renderer, background.r, background.g, background.b, background.a);
+        SDL_RenderClear(renderer);
+    }
 }

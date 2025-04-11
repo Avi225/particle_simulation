@@ -120,7 +120,7 @@ void manager::render()
 	case 1:
 		{
 			int w, h;
-			camera -> getSize(&w, &h);
+			window -> getSize(&w, &h);
 			float mouseX, mouseY;
 			SDL_GetMouseState(&mouseX, &mouseY);
 			
@@ -174,7 +174,7 @@ void manager::init()
 	window = new aWindow("particles", 1280, 720);
 	camera = new aCamera(1280, 720, window);
 
-	fpsCap = window -> getRefreshRate(); 
+	fpsCap = window -> getRefreshRate();
 
 	int w, h;
 	window -> getSize(&w, &h);
@@ -261,6 +261,7 @@ void manager::loop()
 			// Event handling loop
 			while (SDL_PollEvent(&event))
 			{
+				int w, h;
 				switch (event.type)
 				{
 					case SDL_EVENT_QUIT:
@@ -289,10 +290,6 @@ void manager::loop()
 							case SDLK_F11:
 								// Toggle fullscreen mode
 								window -> switchFullscreen();
-								int w, h;
-								window -> getSize(&w, &h);
-								window -> updateSize(w, h);
-								camera -> setSize(w, h);
 								break;
 							case SDLK_SPACE:
 								// Toggle simulation running
@@ -308,9 +305,10 @@ void manager::loop()
 								break;
 							}
 						break;
-					case SDL_EVENT_WINDOW_RESIZED:  
-						int w, h;
-						window -> getSize(&w, &h);
+					case SDL_EVENT_WINDOW_RESIZED:
+						w = event.window.data1;
+                		h = event.window.data2; 
+
 						window -> updateSize(w, h);
 						camera -> setSize(w, h);
 						break;
@@ -330,7 +328,6 @@ void manager::loop()
 		}
 
 		render();
-
         frameCount++;
 	    fpsTimer += frameTime;
 	    if (fpsTimer >= 1.0)

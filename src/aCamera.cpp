@@ -62,8 +62,8 @@ void aCamera::setSize(int w, int h)
 	width = w;
 	height = h;
 }
-// Get the size
 
+// Get the size
 void aCamera::getSize(int* w, int* h)
 {
 	*w = width;
@@ -142,8 +142,8 @@ void aCamera::renderLine(vector2d a, vector2d b, double thickness, SDL_Color col
 
     if (!UI)
     {
-        screenPosA = worldToScreen(a);
-        screenPosB = worldToScreen(b);
+		screenPosA = worldToScreen(a);
+		screenPosB = worldToScreen(b);
 
         screenThickness = static_cast<float>(clamp(thickness * zoomScale * zoom, 1.0));
     }
