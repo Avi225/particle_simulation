@@ -14,7 +14,7 @@ aCamera::aCamera(int nWidth, int nHeight, aWindow* nWindow)
 	targetZoom = 0.05;
 	targetPosition = vector2d(0, 0);
 	spriteSize = 64;
-	fprintf(stderr, "aCamera::aCamera - Constructor finished successfully.\n"); fflush(stderr);
+	log::info("aCamera::aCamera - Constructor finished successfully.");
 }
 
 void aCamera::cleanUp()
@@ -23,8 +23,8 @@ void aCamera::cleanUp()
     {
         if (texture)
         {
-            SDL_DestroyTexture(texture);
-        }
+		    SDL_DestroyTexture(texture);
+		}
     }
     textures.clear();
 }
@@ -78,11 +78,11 @@ void aCamera::loadTextures()
 	for (const auto& pair : textures) {
         if(!SDL_SetTextureScaleMode(pair.second, SDL_SCALEMODE_LINEAR))
         {
-			fprintf(stderr, "aCamera::loadTextures - Set texture scale mode error: %s\n", SDL_GetError()); fflush(stderr);
+			log::error("aCamera::loadTextures - Set texture scale mode error: {}", SDL_GetError());
 		}
 		if(!SDL_SetTextureBlendMode(pair.second, SDL_BLENDMODE_BLEND))
         {
-			fprintf(stderr, "aCamera::loadTextures - Set texture blend mode error: %s\n", SDL_GetError()); fflush(stderr);
+			log::error("aCamera::loadTextures - Set texture blend mode error: {}", SDL_GetError());
 		}
     }
 }
@@ -177,8 +177,7 @@ void aCamera::renderLine(vector2d a, vector2d b, double thickness, SDL_Color col
     }
     else
     {
-        fprintf(stderr, "Error: aCamera::renderLine - 'basic' texture not found.\n");
-        fflush(stderr);
+        log::error("aCamera::renderLine - 'basic' texture not found.");
     }
 }
 

@@ -1,8 +1,14 @@
 #include "utility.hpp"
 
 grid::grid(vector2d position, int w, int h, double cellW, double cellH)
-:position(position), width(w), height(h), cellWidth(cellW), cellHeight(cellH)
-{}
+:position(position),
+width(w),
+height(h),
+cellWidth(cellW),
+cellHeight(cellH)
+{
+    log::info("grid::grid - Constructor finished successfully.");
+}
 
 void grid::render(aCamera *camera)
 {

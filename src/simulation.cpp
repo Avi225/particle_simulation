@@ -34,6 +34,8 @@ simulationContainer::simulationContainer()
 	selectedQuadTree = nullptr; // Currently selected quadrant of the QuadTree, for debugging
 
 	iterationSteps = 2; // Number of iteration steps for collision resolution
+
+	log::info("simulationContainer::simulationContainer - Constructor finished successfully.");
 }
 
 void simulationContainer::cleanUp()

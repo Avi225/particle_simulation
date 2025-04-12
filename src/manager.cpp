@@ -40,6 +40,7 @@ manager::manager()
 
 	debugMenu = nullptr;
 	controlsMenu = nullptr;
+	log::info("manager::manager - Constructor finished successfully.");
 }
 
 void manager::update()
@@ -101,7 +102,7 @@ void manager::update()
 		}
 		default:
 		{
-			log::error("Error: manager state not found\n");
+			log::error("manager::update - Invaid manager state '{}'\n", state);
 			break;
 		}
 	}
@@ -137,7 +138,7 @@ void manager::render()
 		}
 	default:
 		{
-			log::error("Error: manager state not found\n");
+			log::error("manager::render - Invaid manager state '{}'\n", state);
 			break;
 		}
 	}
@@ -229,13 +230,6 @@ void manager::loadMenus()
 	    menu->text = &displaySimulationState;
 	}
 	menu = nullptr;
-	menu = dynamic_cast<menuText*>(debugMenu->getById("log"));
-	if (menu)
-	{
-		delete menu->text;
-		menu->textOwned = false;
-	    menu->text = log::getString();
-	}
 }
 
 // Color division is sick, you know what unites us?
@@ -253,8 +247,6 @@ void manager::loop()
 
 		while (accumulator >= timeStep)
 		{
-			log::clear();
-
 			float mouseX, mouseY;
 			SDL_GetMouseState(&mouseX, &mouseY);
 
@@ -322,12 +314,15 @@ void manager::loop()
 			}
 			update();
 
+
 			tickCount++;
 		    
 			accumulator -= timeStep;
 		}
 
 		render();
+
+		log::printAll();
         frameCount++;
 	    fpsTimer += frameTime;
 	    if (fpsTimer >= 1.0)
@@ -356,6 +351,7 @@ void manager::loop()
 		    if (frameDelay > 0)
 		        SDL_Delay(frameDelay); 
 		}
+
 	}
 	cleanUp();
 }

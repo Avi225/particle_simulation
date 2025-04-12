@@ -1,5 +1,8 @@
-#include <cstring>
 #include "math.hpp"
+
+#include <cstring>
+
+#include "log.hpp"
 
 double mapRange(double value, double inMin, double inMax, double outMin, double outMax)
 {
@@ -197,7 +200,7 @@ vector2d vector2d::operator/(double const& a)
 
 void vector2d::print()
 {
-	printf("%f, %f\n", x, y);
+	log::info("{}, {}", x, y);
 }
 
 void vector2d::normalize(double target)
@@ -245,7 +248,7 @@ void vector2d::rotate(double degrees)
 
 double vector2d::length()
 {
-	return(sqrt(x*x+y*y));
+	return(isqrt(x*x+y*y));
 }
 
 vector2d vector2d::getVector(vector2d b)

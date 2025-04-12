@@ -67,7 +67,7 @@ void menu::setToken(std::string token, std::string value)
     if(token == "id")
         id = value;
     else
-        log::error(std::format("Error: Mismatched token \"{}\" value \"{}\" for element \"menu\"", token, value));
+        log::error("menu::setToken - Mismatched token \"{}\" value \"{}\" for element \"menu\"", token, value);
 }
 
 void menu::cleanUp()
@@ -102,17 +102,17 @@ void menuCon::render(aCamera* camera, SDL_FRect area, menu* root)
 
     if(sizeScaling != "pixel" && sizeScaling != "percent")
     {
-        log::error(std::format("Error: sizeScaling \"{}\" not valid", sizeScaling));
+        log::error("menuCon::render - sizeScaling \"{}\" not valid", sizeScaling);
     }
 
     if(marginScaling != "pixel" && marginScaling != "percent")
     {
-        log::error(std::format("Error: marginScaling \"{}\" not valid", marginScaling));
+        log::error("menuCon::render - marginScaling \"{}\" not valid", marginScaling);
     }
 
     if(paddingScaling != "pixel" && paddingScaling != "percent")
     {
-        log::error(std::format("Error: paddingScaling \"{}\" not valid", paddingScaling));
+        log::error("menuCon::render - paddingScaling \"{}\" not valid", paddingScaling);
     }
 
 
@@ -172,7 +172,7 @@ void menuCon::render(aCamera* camera, SDL_FRect area, menu* root)
     }
     else
     {
-        log::error(std::format("Error: alignment \"{}\" not valid", alignment));
+        log::error("menuCon::render - alignment \"{}\" not valid", alignment);
     }
 
     rect.x += nMargin.h;
@@ -217,7 +217,7 @@ void menuCon::setToken(std::string token, std::string value)
     else if(token == "padding")
         padding = parser::parseRect(value);
     else
-        log::error(std::format("Error: Mismatched token \"{}\" value \"{}\" for element \"con\"", token, value));
+        log::error("menuCon::setToken - Mismatched token \"{}\" value \"{}\" for element \"con\"", token, value);
 }
 
 
@@ -283,7 +283,7 @@ void menuText::render(aCamera* camera, SDL_FRect area, menu* root)
     }
     else
     {
-        log::error(std::format("Error: alignment \"{}\" not valid", alignment));
+        log::error("menuText::render - alignment \"{}\" not valid", alignment);
     }
     camera -> renderText({double(rect.x), double(rect.y)}, size.y, alignment, *text, color, true);
 
@@ -312,7 +312,7 @@ void menuText::setToken(std::string token, std::string value)
         textOwned = true;
     }
     else
-        log::error(std::format("Error: Mismatched token \"{}\" value \"{}\" for element \"text\"", token, value));
+        log::error("menuText::setToken - Mismatched token \"{}\" value \"{}\" for element \"text\"", token, value);
 }
 
 void menuText::cleanUp()
