@@ -72,7 +72,7 @@ If you got stuck at any point building the software, encountered a bug or have a
 
 ## Goals for v0.3.0
 
-- Unified logging
+- Unified logging ✓
 - Better comments
 - New control scheme
 
