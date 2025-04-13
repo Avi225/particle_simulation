@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <functional>
-#include <format>
 
 #include "math.hpp"
 #include "aCamera.hpp"

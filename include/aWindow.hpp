@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <sstream>
 #include <unordered_map>
-#include <format>
 
 #include "log.hpp"
 #include "math.hpp"
