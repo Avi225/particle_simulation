@@ -20,7 +20,7 @@ particle::particle(vector2d nPosition, double nRadius)
 void particle::render(aCamera *camera)
 {
 	SDL_Color color = {255, 255, 255, 255};
-	Uint8 factor = Uint8(mapRange(clamp(velocity.length(), 0, 50), 0, 50, 0, 255));
+	Uint8 factor = Uint8(mapRange(clamp(velocity.length(), 0, 30), 0, 30, 0, 255));
 	color.g -= factor;
 	color.b -= factor;
 	camera -> renderDisc(position, radius, color, false);
