@@ -5,7 +5,7 @@
 aWindow::aWindow(const char* title, int width, int height)
 	: window(NULL), renderer(NULL)
 {
-	resolutionMultiplier = 0.5;
+	resolutionMultiplier = 2;
 
     background = {30, 30, 30, 255};
     fullscreen = false;
@@ -196,12 +196,13 @@ void aWindow::renderRect(SDL_FRect rect, SDL_Color color)
             rect.y * float(resolutionMultiplier),
             rect.w * float(resolutionMultiplier),
             rect.h * float(resolutionMultiplier)};
+
     int ww, wh;
     getSize(&ww, &wh);
-    ww *= int(resolutionMultiplier);
-    wh *= int(resolutionMultiplier);
-
-    if (rect.x > ww || rect.y > wh || rect.x + rect.w < 0 || rect.y + rect.h < 0)
+    ww = int(ww * resolutionMultiplier);
+    wh = int(wh * resolutionMultiplier);
+    
+    if(rect.x > ww || rect.y > wh || rect.x+rect.w < 0 || rect.y+rect.h < 0)
     {
         return;
     }
@@ -389,8 +390,8 @@ void aWindow::renderText(vector2d position, double height, std::string alignment
 
 		int ww, wh;
 		getSize(&ww, &wh);
-		ww *= int(resolutionMultiplier);
-		wh *= int(resolutionMultiplier);
+		ww = int(ww * resolutionMultiplier);
+		wh = int(wh * resolutionMultiplier);
 		
 		if(rect.x > ww || rect.y > wh || rect.x+rect.w < 0 || rect.y+rect.h < 0)
 		{
@@ -444,15 +445,22 @@ void aWindow::renderTexture(SDL_Texture* texture, SDL_FRect* source, SDL_FRect* 
 		dst.w = 1;
 	if(dst.h < 1)
 		dst.h = 1;
+
     int ww, wh;
     getSize(&ww, &wh);
-    ww *= int(resolutionMultiplier);
-    wh *= int(resolutionMultiplier);
+    ww = int(ww * resolutionMultiplier);
+    wh = int(wh * resolutionMultiplier);
+    
+    if(dst.x > ww || dst.y > wh || dst.x+dst.w < 0 || dst.y+dst.h < 0)
+    {
+        return;
+    }
 
     if(!SDL_SetTextureColorMod(texture, color.r, color.g, color.b))
     {
     	log::error("aWindow::renderTexture - Set texture color mod error: {}", SDL_GetError());
     }
+
     if(!SDL_SetTextureAlphaMod(texture, color.a))
     {
     	log::error("aWindow::renderTexture - Set texture alpha mod error: {}", SDL_GetError());

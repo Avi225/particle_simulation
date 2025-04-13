@@ -248,7 +248,7 @@ void vector2d::rotate(double degrees)
 
 double vector2d::length()
 {
-	return(isqrt(x*x+y*y));
+	return(sqrt(x*x+y*y));
 }
 
 vector2d vector2d::getVector(vector2d b)

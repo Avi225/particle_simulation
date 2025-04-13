@@ -322,11 +322,13 @@ void manager::loop()
 
 		render();
 
-		log::printAll();
+		
+
         frameCount++;
 	    fpsTimer += frameTime;
 	    if (fpsTimer >= 1.0)
 	    {
+	    	log::printAll();
 	        fps = frameCount;
 	        frameCount = 0;
 	        fpsTimer -= 1.0;

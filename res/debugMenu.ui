@@ -102,25 +102,6 @@ con
 					color{255, 255, 255, 255}
 				}
 			}
-		}
-		con
-		{
-			id{logCon}
-			size{160, 20}
-			margin{100, 0, 0, 0}
-			sizeScaling{pixel}
-			color{0, 0, 0, 0}
-			alignment{nw}
-			elements
-			{
-				text
-				{
-					id{log}
-					size{20, 20}
-					alignment{nw}
-					color{255, 255, 255, 255}
-				}
-			}
 		}	
 	}
 }

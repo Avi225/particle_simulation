@@ -7,6 +7,7 @@
 
 int main(int argc, char* args[])
 {
+    log::initFile("particles.log");
     fmt::print("\033[?1049h");  // Enter alternate screen buffer
     fmt::print("\033[?25l");     // Hide cursor
     fflush(stdout);

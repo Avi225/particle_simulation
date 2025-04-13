@@ -3,9 +3,11 @@
 #include <vector>
 #include <string>
 #include <chrono>
+#include <fstream>
 #include <fmt/format.h>
 #include <fmt/chrono.h>
 #include <mutex>
+#include <optional>
 
 enum class LogLevel
 {
@@ -18,6 +20,7 @@ struct LogEntry
 	LogLevel level;
 	std::string message;
 	std::string timestamp;
+	unsigned int calls;
 };
 
 inline std::string currentTimeString()
@@ -35,6 +38,13 @@ class log
 {
 public:
 
+	static void initFile(const std::string& filename)
+    {
+        auto& instance = getInstance();
+    	std::lock_guard<std::mutex> lock(instance.mtx);
+    	instance.fileStream.emplace(filename, std::ios::out | std::ios::trunc);
+    }
+
 	template<typename... Args>
 	static void error(const std::string& formatStr, Args&&... args)
 	{
@@ -49,6 +59,7 @@ public:
 				if (entry.level == LogLevel::Error && entry.message == msg)
 				{
 					entry.timestamp = now;
+					entry.calls += 1;
 					updated = true;
 					break;
 				}
@@ -57,9 +68,13 @@ public:
 			{
 				instance.entries.push_back({LogLevel::Error, msg, now});
 			}
+
+			if(instance.fileStream && instance.fileStream->is_open())
+            {
+                *instance.fileStream << "[ERROR] " << now << " - " << msg << "\n";
+                instance.fileStream->flush();
+            }
 		}
-		
-		//fmt::print(stderr, "\033[31m[ERROR]\033[0m {} - {}\n", now, msg);
 	}
 
 	template<typename... Args>
@@ -68,13 +83,15 @@ public:
 		std::string msg = fmt::format(fmt::runtime(formatStr), std::forward<Args>(args)...);
 		std::string now = currentTimeString();
 		auto& instance = getInstance();
-		
 		{
 			std::lock_guard<std::mutex> lock(instance.mtx);
 			instance.entries.push_back({LogLevel::Info, msg, now});
+			if(instance.fileStream && instance.fileStream->is_open())
+            {
+                *instance.fileStream << "[INFO] " << now << " - " << msg << "\n";
+                instance.fileStream->flush();
+            }
 		}
-		
-		//fmt::print("\033[32m[INFO]\033[0m {} - {}\n", now, msg);
 	}
 
 	static void printAll()
@@ -83,37 +100,29 @@ public:
         std::vector<LogEntry> entriesCopy;
         {
             std::lock_guard<std::mutex> lock(instance.mtx);
-            // Copy the current log state to avoid holding the lock during printing.
             entriesCopy = instance.entries;
         }
 
-        // Build the complete frame in a string buffer.
         std::string buffer;
 
-        // --- Clear Screen (Optimized) & Move Cursor Home ---
-        // \033[H : Move cursor to Home (top-left)
-        // \033[J : Clear from cursor to end of screen
         buffer.append("\033[H\033[J");
 
-        // --- Append the log entries ---
         for (const auto &entry : entriesCopy)
         {
             if (entry.level == LogLevel::Error)
             {
                 fmt::format_to(std::back_inserter(buffer),
-                    "\033[31m[ERROR]\033[0m {} - {}\n", entry.timestamp, entry.message);
+                    "\033[31m[ERROR]\033[0m [{}] {} [{}]\n", entry.timestamp, entry.message, entry.calls);
             }
-            else // LogLevel::Info
+            else
             {
                 fmt::format_to(std::back_inserter(buffer),
-                    "\033[32m[INFO]\033[0m {} - {}\n", entry.timestamp, entry.message);
+                    "\033[32m[INFO]\033[0m [{}] {}\n", entry.timestamp, entry.message);
             }
         }
 
-        // Print the entire buffer at once.
         fmt::print("{}", buffer);
 
-        // Flush output buffers.
         fflush(stdout);
         fflush(stderr);
     }
@@ -133,4 +142,5 @@ private:
 
 	std::vector<LogEntry> entries;
 	std::mutex mtx;
+	std::optional<std::ofstream> fileStream;
 };
